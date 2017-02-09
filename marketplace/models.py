@@ -5,6 +5,7 @@ from django.db import models
 class User(models.Model):
     name = models.TextField()
     user_id = models.TextField()
+    balance = models.TextField()
 
 class Carpool(models.Model):
     carpool_id = models.TextField()
@@ -13,4 +14,5 @@ class Carpool(models.Model):
     cost = models.TextField()
     location_start = models.TextField()
     location_end = models.TextField()
-
+    time_leaving = models.TextField()
+    time_arrival = models.TextField()
