@@ -3,12 +3,14 @@ from django.db import models
 
 class User(models.Model):
     name = models.TextField()
-    user_id = models.TextField()
+    id_user = models.TextField()
     balance = models.TextField()
+    carpool_owned = models.TextField()
+    carpool_joined = models.TextField()
 
 
 class Carpool(models.Model):
-    carpool_id = models.TextField()
+    id_carpool = models.TextField()
     driver = models.TextField()  # single driver (user)
     passengers = models.TextField()  # list of passengers (users)
     cost = models.TextField()
