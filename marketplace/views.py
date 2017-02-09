@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import render
 
-<<<<<<< HEAD
 
 def hello_world(request):
     return render(request, 'marketplace/hello_world.html', {})
@@ -16,10 +15,10 @@ class UserList(APIView):
 
     """
 
-    # def get(self, request, format=None):
-    #     users = User.objects.all()
-    #     serializer = UserSerializer(users, many=True)
-    #     return Response(serializer.data)
+    def get(self, request, format=None):
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
 
     def post(self, request, format=None):
         serializer = UserSerializer(data=request.data)

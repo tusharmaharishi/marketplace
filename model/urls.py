@@ -4,6 +4,5 @@ from marketplace import views
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^v1/users$', views.UserList.as_view()),
     url(r'', include('marketplace.urls')), #redirects anything from http://localhost:8000/ to 'marketplace.urls' and look for further instructions
 ]
