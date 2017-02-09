@@ -6,6 +6,8 @@ class User(models.Model):
     name = models.TextField()
     id_user = models.TextField()
     balance = models.TextField()
+    carpool_owned = models.TextField()
+    carpool_joined = models.TextField()
 
 class Carpool(models.Model):
     id_carpool = models.TextField()
