@@ -3,11 +3,11 @@ from .models import User
 
 
 class UserSerializer(serializers.Serializer):
-    id_user = serializers.IntegerField(read_only=True)
+    id_user = serializers.IntegerField(required=True)
     name = serializers.CharField(required=True)
-    balance = serializers.IntegerField(required=True)
-    carpool_owned = serializers.IntegerField()
-    carpool_joined = serializers.IntegerField()
+    balance = serializers.CharField(required=True)
+    carpool_owned = serializers.CharField(required=True)
+    carpool_joined = serializers.CharField(required=True)
 
     def create(self, data):
         """
@@ -23,6 +23,7 @@ class UserSerializer(serializers.Serializer):
         :param data:
         :return:
         """
+        instance.id_user = data.get('id_user', instance.id_user)
         instance.name = data.get('name', instance.name)
         instance.balance = data.get('balance', instance.balance)
         instance.carpool_owned = data.get('carpool_owned', instance.carpool_owned)

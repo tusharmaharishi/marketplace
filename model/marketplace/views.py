@@ -2,7 +2,6 @@ from .models import User
 from .serializers import UserSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import viewsets
 from django.shortcuts import render
 from django.http import HttpResponse
 
@@ -13,7 +12,7 @@ def hello_world(request):
 
 class UserList(APIView):
     def get(self, request):
-        users = User.objects.all()
+        users = User.objects.filter(id_user=113)
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data, status=200, content_type='application/json')
 
@@ -37,7 +36,7 @@ class UserDetail(APIView):
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
-    def post(self, request, id_user):
+    def put(self, request, id_user):
         user = self.get_user(id_user=id_user)
         serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
