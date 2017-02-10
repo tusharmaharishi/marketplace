@@ -1,0 +1,10 @@
+model:
+    build: .
+    container_name: model
+    external_links:
+      -  mysql:db
+    volumes:
+      - ./:/app
+    ports:
+      - "8001:8000"
+    command: bash -c "python manage.py makemigrations marketplace && python manage.py migrate && mod_wsgi-express start-server --working-directory ./ --reload-on-changes ./model/wsgi.py --log-to-terminal"
