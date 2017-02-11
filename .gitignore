@@ -5,6 +5,7 @@
 *.egg-info
 *.pot
 *.py[co]
+*.py~
 .tox/
 .idea/
 __pycache__
@@ -17,4 +18,4 @@ tests/coverage_html/
 tests/.coverage
 build/
 tests/report/
-0001_initial.py
+migrations/

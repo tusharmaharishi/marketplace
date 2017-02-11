@@ -3,7 +3,7 @@ from .models import User
 
 
 class UserSerializer(serializers.Serializer):
-    id_user = serializers.IntegerField(required=True)
+    id_user = serializers.IntegerField(required=True) # TODO: make this read only, generate unique id, user shouldn't post it
     name = serializers.CharField(required=True)
     balance = serializers.CharField(required=True)
     carpool_owned = serializers.CharField(required=True)
