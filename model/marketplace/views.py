@@ -20,7 +20,7 @@ class UserList(APIView):
         serializer = UserSerializer(data=request.data) # TODO: don't allow duplicate posts, permissions auth
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=201, content_type='application/x-www-form-urlencoded')
+            return Response(serializer.data, status=201, content_type='application/json')
         return Response(serializer.errors, status=400)
 
 
@@ -41,7 +41,7 @@ class UserDetail(APIView):
         serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=201, content_type='application/x-www-form-urlencoded')
+            return Response(serializer.data, status=201, content_type='application/json')
         return Response(serializer.errors, status=400)
 
     def delete(self, request, id_user):
