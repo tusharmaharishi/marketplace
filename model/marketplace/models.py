@@ -1,8 +1,10 @@
 from django.db import models
 import uuid
 
+
 class User(models.Model):
     # id_user = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.AutoField(primary_key=True, editable=False)
     name = models.CharField(max_length=128)
     balance = models.DecimalField(max_digits=10, decimal_places=2)
     carpool_owned = models.OneToOneField(  # user is driver, user deletes himself, carpool is deleted
@@ -23,13 +25,13 @@ class User(models.Model):
 
 class Carpool(models.Model):
     # id_carpool = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    driver = models.CharField(max_length=128)
-    # driver = models.OneToOneField(  # carpool is deleted, but driver should not delete himself (form new carpool)
-    #     'User',
-    #     on_delete=models.CASCADE,
-    #     blank=True,
-    #     related_name='+'
-    # )  # single driver per carpool (user)
+    id = models.AutoField(primary_key=True, editable=False)
+    driver = models.OneToOneField(  # carpool is deleted, but driver should not delete himself (form new carpool)
+        'User',
+        on_delete=models.CASCADE,
+        blank=True,
+        related_name='+'
+    )  # single driver per carpool (user)
     # passengers = models.ManyToManyField(
     #     'User',
     #     blank=True,

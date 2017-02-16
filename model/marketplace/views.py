@@ -1,9 +1,8 @@
+from django.shortcuts import render
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from .models import User, Carpool
 from .serializers import UserSerializer, CarpoolSerializer
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from django.shortcuts import render
-from django.http import HttpResponse
 
 
 def hello_world(request):
@@ -11,7 +10,6 @@ def hello_world(request):
 
 
 class UserList(APIView):
-
     def get(self, request):
         users = User.objects.all()  # TODO: get all users returns integer error '',
         serializer = UserSerializer(users, many=True)
@@ -26,28 +24,27 @@ class UserList(APIView):
 
 
 class UserDetail(APIView):
-
-    def get_user(self, id_user):
+    def get_user(self, id):
         try:
-            return User.objects.get(id_user=id_user)
+            return User.objects.get(id=id)
         except User.DoesNotExist:
             raise Response(status=404)
 
-    def get(self, request, id_user):
-        user = self.get_user(id_user=id_user)
+    def get(self, request, id):
+        user = self.get_user(id=id)
         serializer = UserSerializer(user)
         return Response(serializer.data, status=200, content_type='application/json')
 
-    def put(self, request, id_user):
-        user = self.get_user(id_user=id_user)
+    def put(self, request, id):
+        user = self.get_user(id=id)
         serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201, content_type='application/json')
         return Response(serializer.errors, status=400)
 
-    def delete(self, request, id_user):
-        user = self.get_user(id_user=id_user)
+    def delete(self, request, id):
+        user = self.get_user(id=id)
         user.delete()
         return Response(status=204)
 
@@ -67,26 +64,26 @@ class CarpoolList(APIView):
 
 
 class CarpoolDetail(APIView):
-    def get_carpool(self, id_carpool):
+    def get_carpool(self, id):
         try:
-            return Carpool.bojects.get(id_carpool=id_carpool)
+            return Carpool.objects.get(id=id)
         except Carpool.DoesNotExist:
             raise Response(status=404)
 
-    def get(self, request, id_carpool):
-        carpool = self.get_carpool(id_carpool=id_carpool)
+    def get(self, request, id):
+        carpool = self.get_carpool(id=id)
         serializer = UserSerializer(carpool)
         return Response(serializer.data, status=200, content_type='application/json')
 
-    def put(self, request, id_carpool):
-        carpool = self.get_carpool(id_carpool=id_carpool)
+    def put(self, request, id):
+        carpool = self.get_carpool(id=id)
         serializer = UserSerializer(carpool, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201, content_type='application/json')
         return Response(serializer.errors, status=400)
 
-    def delete(self, request, id_carpool):
-        carpool = self.get_user(id_user=id_carpool)
+    def delete(self, request, id):
+        carpool = self.get_user(id=id)
         carpool.delete()
         return Response(status=204)
