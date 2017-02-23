@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from .models import User, Carpool
 from .serializers import UserSerializer, CarpoolSerializer
 
@@ -84,6 +85,6 @@ class CarpoolDetail(APIView):
         return Response(serializer.errors, status=400)
 
     def delete(self, request, id):
-        carpool = self.get_user(id=id)
+        carpool = self.get_carpool(id=id)
         carpool.delete()
         return Response(status=204)
