@@ -66,18 +66,18 @@ class CarpoolList(APIView):
 class CarpoolDetail(APIView):
     def get_carpool(self, id):
         try:
-            return Carpool.objects.get(id=id)
+            return Carpool.objects.filter(id=id)
         except Carpool.DoesNotExist:
             raise Response(status=404)
 
     def get(self, request, id):
         carpool = self.get_carpool(id=id)
-        serializer = UserSerializer(carpool)
+        serializer = CarpoolSerializer(carpool, many=True)
         return Response(serializer.data, status=200, content_type='application/json')
 
     def put(self, request, id):
         carpool = self.get_carpool(id=id)
-        serializer = UserSerializer(carpool, data=request.data)
+        serializer = CarpoolSerializer(carpool, many=True, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201, content_type='application/json')
