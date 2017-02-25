@@ -27,13 +27,13 @@ class UserList(APIView):
 class UserDetail(APIView):
     def get_user(self, id):
         try:
-            return User.objects.get(id=id)
+            return User.objects.filter(id=id)
         except User.DoesNotExist:
             raise Response(status=404)
 
     def get(self, request, id):
         user = self.get_user(id=id)
-        serializer = UserSerializer(user)
+        serializer = UserSerializer(user, many=True)
         return Response(serializer.data, status=200, content_type='application/json')
 
     def put(self, request, id):

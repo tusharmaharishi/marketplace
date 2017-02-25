@@ -1,0 +1,32 @@
+model:
+    build: .
+    container_name: model
+    external_links:
+      -  mysql:db
+    volumes:
+      - ./model:/app
+    ports:
+      - "8001:8000"
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py loaddata ./fixtures/db.json && mod_wsgi-express start-server --working-directory ./ --reload-on-changes ./model/wsgi.py --log-to-terminal"
+
+exp:
+    build: .
+    container_name: exp
+    links:
+      - model:model-api
+    volumes:
+      - ./exp:/app
+    ports:
+      - "8002:8000"
+    command: bash -c "mod_wsgi-express start-server --reload-on-changes ./exp/wsgi.py --log-to-terminal"
+
+web:
+    build: .
+    container_name: web
+    links:
+      - exp:exp-api
+    ports:
+      - "8003:8000"
+    volumes:
+      - ./web:/app
+    command: bash -c "mod_wsgi-express start-server --reload-on-changes ./web/wsgi.py --log-to-terminal"
