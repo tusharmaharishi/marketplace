@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.http import HttpResponse, JsonResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -6,8 +6,8 @@ from .models import User, Carpool
 from .serializers import UserSerializer, CarpoolSerializer
 
 
-def hello_world(request):
-    return render(request, 'marketplace/hello_world.html', {})
+def index(request):
+    return HttpResponse("Model API", status=200)
 
 
 class UserList(APIView):

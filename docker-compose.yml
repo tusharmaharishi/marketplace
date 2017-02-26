@@ -26,7 +26,7 @@ web:
     links:
       - model:model-api # TODO: Change back to exp-api when exp api built
     ports:
-      - "8003:8000"
+      - "8080:8000"
     volumes:
       - ./web:/app
     command: bash -c "mod_wsgi-express start-server --reload-on-changes ./web/wsgi.py --log-to-terminal"
