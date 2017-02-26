@@ -7,7 +7,7 @@ model:
       - ./model:/app
     ports:
       - "8001:8000"
-    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py loaddata ./fixtures/db.json && mod_wsgi-express start-server --working-directory ./ --reload-on-changes ./model/wsgi.py --log-to-terminal"
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && mod_wsgi-express start-server --working-directory ./ --reload-on-changes ./model/wsgi.py --log-to-terminal"
 
 exp:
     build: .
@@ -24,7 +24,7 @@ web:
     build: .
     container_name: web
     links:
-      - exp:exp-api
+      - model:model-api # TODO: Change back to exp-api when exp api built
     ports:
       - "8003:8000"
     volumes:
