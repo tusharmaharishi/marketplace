@@ -12,4 +12,4 @@ def list_users(request):
     req = urllib.request.Request(BASE_API + 'users/')
     resp_json = urllib.request.urlopen(req).read().decode('utf-8')
     res = json.loads(resp_json)
-    return render(request, 'list_user.html', {'user_list': res}, content_type='application/json')
+    return render(request, 'list_user.html', {'user_list': res})
