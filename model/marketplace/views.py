@@ -1,53 +1,87 @@
-from django.http import HttpResponse, JsonResponse
-from rest_framework.response import Response
+from django.core import serializers
+from django.http import JsonResponse
 from rest_framework.views import APIView
 
+from .forms import UserForm
 from .models import User, Carpool
-from .serializers import UserSerializer, CarpoolSerializer
 
 
 def index(request):
-    return HttpResponse("Model API", status=200)
+    if request.method == 'GET':
+        return JsonResponse({"message": "Model API entry point"}, status=200)
 
 
 class UserList(APIView):
     def get(self, request):
-        users = User.objects.all()  # TODO: get all users returns integer error '',
-        serializer = UserSerializer(users, many=True)
-        return Response(serializer.data, status=200, content_type='application/json')
+        if request.method == 'GET':
+            users = User.objects.all()
+            response = {}
+            response['status'] = '200 OK'
+            response['data'] = {}
+            response['data']['count'] = users.count()
+            response['data']['users'] = serializers.serialize('json', users)
+            return JsonResponse(response, status=200)
 
     def post(self, request):
-        serializer = UserSerializer(data=request.data)  # TODO: don't allow duplicate posts, permissions auth
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201, content_type='application/json')
-        return Response(serializer.errors, status=400)
+        if request.method == 'POST':
+            form = UserForm(request.data)
+            response = {}
+            if form.is_valid():
+                form.save()
+                response['status'] = '201 Created'
+                response['data'] = serializers.serialize('json', [form, ])
+                return JsonResponse(response, status=201)
+            else:
+                response['status'] = '400 Bad Request'
+                response['message'] = form.errors
+                return JsonResponse(response, status=400)
+
+    def delete(self, request):
+        if request.method == 'DELETE':
+            User.objects.all().delete()
+            return JsonResponse({'status': '204 No Content'}, status=204)
 
 
-class UserDetail(APIView):
-    def get_user(self, id):
+class UserDetailById(APIView):
+    def get_user(self, pk):
         try:
-            return User.objects.filter(id=id)
+            return User.objects.get(pk=pk)
         except User.DoesNotExist:
-            raise Response(status=404)
+            response = {}
+            response['status'] = '404 Not Found'
+            response['message'] = 'User with id "' + pk + '" does not exist'
+            return JsonResponse(response, status=404)
 
-    def get(self, request, id):
-        user = self.get_user(id=id)
-        serializer = UserSerializer(user, many=True)
-        return Response(serializer.data, status=200, content_type='application/json')
+    def get(self, request, pk):
+        if request.method == 'GET':
+            user = self.get_user(pk=pk)
+            response = {}
+            response['status'] = '200 OK'
+            response['data'] = {}
+            response['data']['count'] = 1
+            response['data']['users'] = serializers.serialize('json', user)
+            return JsonResponse(response, status=200)
 
-    def put(self, request, id):
-        user = self.get_user(id=id)
-        serializer = UserSerializer(user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201, content_type='application/json')
-        return Response(serializer.errors, status=400)
+    def put(self, request, pk):
+        if request.method == 'PUT':
+            user = self.get_user(pk=pk)
+            form = UserForm(request.data, instance=user)
+            response = {}
+            if form.is_valid():
+                form.save()
+                response['status'] = '201 Created'
+                response['data'] = serializers.serialize('json', [form, ])
+                return JsonResponse(response, status=201)
+            else:
+                response['status'] = '400 Bad Request'
+                response['message'] = form.errors
+                return JsonResponse(response, status=400)
 
-    def delete(self, request, id):
-        user = self.get_user(id=id)
-        user.delete()
-        return Response(status=204)
+    def delete(self, request, pk):
+        if request.method == 'DELETE':
+            user = self.get_user(pk=pk)
+            user.delete()
+            return JsonResponse({'status': '204 No Content'}, status=204)
 
 
 class CarpoolList(APIView):
@@ -64,27 +98,28 @@ class CarpoolList(APIView):
         return Response(serializer.errors, status=400)
 
 
-class CarpoolDetail(APIView):
-    def get_carpool(self, id):
+class CarpoolDetailById(APIView):
+    def get_carpool(self, pk):
         try:
-            return Carpool.objects.filter(id=id)
+            return Carpool.objects.get(pk=pk)
         except Carpool.DoesNotExist:
-            raise Response(status=404)
+            return JsonResponse({"message": "User does not exist"})
 
-    def get(self, request, id):
-        carpool = self.get_carpool(id=id)
+    def get(self, request, pk):
+        carpool = self.get_carpool(pk=pk)
         serializer = CarpoolSerializer(carpool, many=True)
         return Response(serializer.data, status=200, content_type='application/json')
 
-    def put(self, request, id):
-        carpool = self.get_carpool(id=id)
+    def put(self, request, pk):
+        carpool = self.get_carpool(pk=pk)
         serializer = CarpoolSerializer(carpool, many=True, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201, content_type='application/json')
         return Response(serializer.errors, status=400)
 
-    def delete(self, request, id):
-        carpool = self.get_carpool(id=id)
+    def delete(self, request, pk):
+        carpool = self.get_carpool(pk=pk)
         carpool.delete()
         return Response(status=204)
+
