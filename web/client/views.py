@@ -5,7 +5,9 @@ BASE_API = 'http://model-api:8000/v1/'
 
 
 def index(request):
-    return render(request, 'index.html')
+	carpools = requests.get(BASE_API  + 'carpools/').json()
+	data = carpools['data']
+	return render(request, 'index.html', {'latest_rides': data})
 
 
 def list_users(request):
