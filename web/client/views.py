@@ -14,3 +14,8 @@ def list_users(request):
     res = requests.get(BASE_API + 'users/2/').json()
     data = res['data']
     return render(request, 'list_user.html', {'user_list': data})
+
+def user_detail(request):
+	res = requests.get(BASE_API + 'users/1/').json()
+	data = res['data']
+	return render(request, 'list_user.html', {'user_list': data})
