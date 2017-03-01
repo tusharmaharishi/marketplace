@@ -1,37 +1,38 @@
-from django.test import TestCase, Client
+import json
+
 from django.core.urlresolvers import reverse
-import unittest, json, time
-from app import User
+from django.test import TestCase
+
 
 class GetUserTestCase(TestCase):
-	def setUp(self):
-		pass #nothing to set up
+    def setUp(self):
+        pass  # nothing to set up
 
-	def success_response(self):
-        #assumes user with id 1 is stored in db
-        response = self.client.get(reverse('list_users', kwargs={'pk':'1'}))
-        #checks that response contains parameter order list & implicitly
+    def test_success_response(self):
+        # assumes user with id 1 is stored in db
+        response = self.client.get(reverse('user_list'))
+        # checks that response contains parameter order list & implicitly
         # checks that the HTTP status code is 200
+        jsonResponse = json.loads(str(response.content, encoding='utf8'))
+        self.assertEquals(jsonResponse["status"], '200 OK')
         self.assertContains(response, 'pk')
         self.assertEqual(response.status_code, 200)
 
-    #user_id not given in url, so error
-    def fails_invalid(self):
-        response = self.client.get(reverse('list_users', kwargs={'pk':'0'}))
+    def test_fails_invalid(self):
+        response = self.client.get(reverse('user_detail', kwargs={'pk': 0}))
         jsonResponse = json.loads(str(response.content, encoding='utf8'))
-        self.assertEquals(jsonResponse["status"], False)
+        self.assertEquals(jsonResponse["status"], '404 Not Found')
         self.assertEquals(response.status_code, 404)
 
-    def user_fields(self):
-    	response = self.client.get(reverse('list_users', kwargs={'pk': '1'}))
-    	jsonResponse = json.loads(str(response.content, encoding='utf8'))
-    	self.assertEquals(jsonResponse["status"], True)
-    	self.assertContains(response, 'pk')
-    	self.assertContains(response, 'name')
-    	self.assertContains(response, 'balance')
+    def test_user_fields(self):
+        response = self.client.get(reverse('user_detail', kwargs={'pk': 1}))
+        jsonResponse = json.loads(str(response.content, encoding='utf8'))
+        self.assertEquals(jsonResponse["status"], '200 OK')
+        self.assertContains(response, 'pk')
+        self.assertContains(response, 'name')
+        self.assertContains(response, 'balance')
 
-    #tearDown method is called after each test
+        # tearDown method is called after each test
+
     def tearDown(self):
-        pass #nothing to tear down
-
-class GetCarpoolTestCase
+        pass  # nothing to tear down
