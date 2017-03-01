@@ -26,18 +26,9 @@
       </div>
       {% for user in user_list %}
     <p>Name: {{ user.fields.name }}</p>
-	{% endfor %}
-      
-      <hr>
-      
-      <div class="panel panel-default">
-        <div class="panel-heading"><a href="">My Balance</a></div>
-      </div>
-      {% for user in user_list %}
     <p>Balance: ${{ user.fields.balance }}</p>
+<hr>
 	{% endfor %}
-      
-      <hr>
       </div>
     <div class="col-xs-4"><!--map-canvas will be postioned here--></div>
     <img src="https://parking.uncg.edu/wp-content/uploads/2013/09/carpool3.jpg">

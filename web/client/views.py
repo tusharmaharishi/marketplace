@@ -11,11 +11,11 @@ def index(request):
 
 
 def list_users(request):
-    res = requests.get(BASE_API + 'users/2/').json()
+    res = requests.get(BASE_API + 'users/').json()
     data = res['data']
     return render(request, 'list_user.html', {'user_list': data})
 
-def user_detail(request):
-	res = requests.get(BASE_API + 'users/1/').json()
+def user_detail(request, pk):
+	res = requests.get(BASE_API + 'users/' + pk + '/').json()
 	data = res['data']
 	return render(request, 'list_user.html', {'user_list': data})
