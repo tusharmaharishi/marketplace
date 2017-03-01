@@ -1,5 +1,6 @@
 model:
-    build: .
+    # build: .
+    image: tp33/django 
     container_name: model
     external_links:
       -  mysql:db
@@ -7,10 +8,11 @@ model:
       - ./model:/app
     ports:
       - "8001:8000"
-    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py loaddata fixtures/db.json && mod_wsgi-express start-server --working-directory ./ --reload-on-changes ./model/wsgi.py --log-to-terminal"
+    command: bash -c "pip install \"djangorestframework==3.5.3\" && python manage.py makemigrations && python manage.py migrate && python manage.py loaddata fixtures/db.json && mod_wsgi-express start-server --working-directory ./ --reload-on-changes ./model/wsgi.py --log-to-terminal"
 
 exp:
-    build: .
+    # build: .
+    image: tp33/django 
     container_name: exp
     links:
       - model:model-api
@@ -18,10 +20,11 @@ exp:
       - ./exp:/app
     ports:
       - "8002:8000"
-    command: bash -c "mod_wsgi-express start-server --reload-on-changes ./exp/wsgi.py --log-to-terminal"
+    command: bash -c "pip install \"requests==2.13.0\" && pip install \"djangorestframework==3.5.3\" && mod_wsgi-express start-server --reload-on-changes ./exp/wsgi.py --log-to-terminal"
 
 web:
-    build: .
+    # build: .
+    image: tp33/django 
     container_name: web
     links:
       - model:model-api # TODO: Change back to exp-api when exp api built
@@ -29,4 +32,4 @@ web:
       - "8080:8000"
     volumes:
       - ./web:/app
-    command: bash -c "mod_wsgi-express start-server --reload-on-changes ./web/wsgi.py --log-to-terminal"
+    command: bash -c "pip install \"requests==2.13.0\" && pip install \"djangorestframework==3.5.3\" && mod_wsgi-express start-server --reload-on-changes ./web/wsgi.py --log-to-terminal"

@@ -1,4 +1,4 @@
-FROM tp33/django
+FROM tp33/django:latest
 
 RUN pip install "djangorestframework==3.5.3" \
 	&& pip install "requests==2.13.0"
