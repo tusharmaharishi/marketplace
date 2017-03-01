@@ -7,7 +7,7 @@
 <body>
 Hellooo
 {% for user in user_list %}
-    <p>{{ user.name }} {{ user.balance }}</p>
+    <p>{{ user.fields.name }} ${{ user.fields.balance }}</p>
 {% endfor %}
 </body>
 </html>
