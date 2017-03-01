@@ -10,7 +10,7 @@ from .models import User, Carpool
 
 def index(request):
     if request.method == 'GET':
-        return JsonResponse({"message": "This is the model API entry point."}, status=200)
+        return JsonResponse({'status': '200 OK', 'message': 'This is the model API entry point.'}, status=200)
 
 
 def get_user(pk):
@@ -47,7 +47,7 @@ def update_user(form):
 def update_carpool(form):
     response = {}
     if form.is_valid():
-        carpool = form.save()  # TODO: check carpool.driver is valid
+        carpool = form.save()
         user = get_user(pk=carpool.driver.pk)
         user.carpool_owned = carpool
         if carpool.passengers:
@@ -64,14 +64,17 @@ def update_carpool(form):
 
 
 class UserList(APIView):
-    def get(self, request):
+    def get(self, request, **kwargs):
         if request.method == 'GET':
-            users = User.objects.all()
+            users = User.objects.filter(**kwargs) if kwargs else User.objects.all()
             response = {}
-            response['data'] = json.loads(serializers.serialize('json', users))
-            response['count'] = users.count()
-            response['status'] = '200 OK'
-            return JsonResponse(response, status=200)
+            if users:
+                response['data'] = json.loads(serializers.serialize('json', users))
+                response['count'] = users.count()
+                response['status'] = '200 OK'
+                return JsonResponse(response, status=200)
+            else:
+                return JsonResponse({'status': '404 Not Found', 'message': 'These users do not exist.'}, status=404)
 
     def post(self, request):
         if request.method == 'POST':
@@ -84,43 +87,50 @@ class UserList(APIView):
             return JsonResponse({'status': '204 No Content'}, status=204)
 
 
-class UserDetailById(APIView):
+class UserDetail(APIView):
     def get(self, request, pk):
         if request.method == 'GET':
             user = get_user(pk=pk)
             response = {}
-            try:
+            if user is not None:
                 response['data'] = json.loads(serializers.serialize('json', [user, ]))
                 response['count'] = 1
                 response['status'] = '200 OK'
                 return JsonResponse(response, status=200)
-            except AttributeError:
-                response['status'] = '404 Not Found'
-                response['message'] = 'This user does not exist.'
-                return JsonResponse(response, safe=False, status=404)
+            else:
+                return JsonResponse({'status': '404 Not Found', 'message': 'This user does not exist.'}, status=404)
 
     def put(self, request, pk):
         if request.method == 'PUT':
             user = get_user(pk=pk)
-            form = UserForm(request.data, instance=user)
-            return update_user(form=form)
+            if user is not None:
+                form = UserForm(request.data, instance=user)
+                return update_user(form=form)
+            else:
+                return JsonResponse({'status': '404 Not Found', 'message': 'This user does not exist.'}, status=404)
 
     def delete(self, request, pk):
         if request.method == 'DELETE':
             user = get_user(pk=pk)
-            user.delete()
-            return JsonResponse({'status': '204 No Content'}, status=204)
+            if user is not None:
+                user.delete()
+                return JsonResponse({'status': '204 No Content'}, status=204)
+            else:
+                return JsonResponse({'status': '404 Not Found', 'message': 'This user does not exist.'}, status=404)
 
 
 class CarpoolList(APIView):
-    def get(self, request):
+    def get(self, request, **kwargs):
         if request.method == 'GET':
-            carpools = Carpool.objects.all()
+            carpools = Carpool.objects.filter(**kwargs) if kwargs else Carpool.objects.all()
             response = {}
-            response['data'] = json.loads(serializers.serialize('json', carpools))
-            response['count'] = carpools.count()
-            response['status'] = '200 OK'
-            return JsonResponse(response, status=200)
+            if carpools:
+                response['data'] = json.loads(serializers.serialize('json', carpools))
+                response['count'] = carpools.count()
+                response['status'] = '200 OK'
+                return JsonResponse(response, status=200)
+            else:
+                return JsonResponse({'status': '404 Not Found', 'message': 'These carpools do not exist.'}, status=404)
 
     def post(self, request):
         if request.method == 'POST':
@@ -133,29 +143,33 @@ class CarpoolList(APIView):
             return JsonResponse({'status': '204 No Content'}, status=204)
 
 
-class CarpoolDetailById(APIView):
+class CarpoolDetail(APIView):
     def get(self, request, pk):
         if request.method == 'GET':
             carpool = get_carpool(pk=pk)
             response = {}
-            try:
+            if carpool is not None:
                 response['data'] = json.loads(serializers.serialize('json', [carpool, ]))
                 response['count'] = 1
                 response['status'] = '200 OK'
                 return JsonResponse(response, status=200)
-            except AttributeError:
-                response['status'] = '404 Not Found'
-                response['message'] = 'This carpool does not exist.'
-                return JsonResponse(response, status=404)
+            else:
+                return JsonResponse({'status': '404 Not Found', 'message': 'This carpool does not exist.'}, status=404)
 
     def put(self, request, pk):
         if request.method == 'PUT':
             carpool = get_carpool(pk=pk)
-            form = CarpoolForm(request.data, instance=carpool)
-            return update_carpool(form=form)
+            if carpool is not None:
+                form = CarpoolForm(request.data, instance=carpool)
+                return update_carpool(form=form)
+            else:
+                return JsonResponse({'status': '404 Not Found', 'message': 'This carpool does not exist.'}, status=404)
 
     def delete(self, request, pk):
         if request.method == 'DELETE':
             carpool = get_carpool(pk=pk)
-            carpool.delete()
-            return JsonResponse({'status': '204 No Content'}, status=204)
+            if carpool is not None:
+                carpool.delete()
+                return JsonResponse({'status': '204 No Content'}, status=204)
+            else:
+                return JsonResponse({'status': '404 Not Found', 'message': 'This carpool does not exist.'}, status=404)
