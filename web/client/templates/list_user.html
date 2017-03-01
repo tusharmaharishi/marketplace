@@ -5,9 +5,10 @@
     <title>Title</title>
 </head>
 <body>
-Hellooo
+<!-- Hellooo -->
 {% for user in user_list %}
-    <p>{{ user.fields.name }} ${{ user.fields.balance }}</p>
+    <p>Name: {{ user.fields.name }}</p>
+    <p>Balance: ${{ user.fields.balance }}</p>
 {% endfor %}
 </body>
 </html>
