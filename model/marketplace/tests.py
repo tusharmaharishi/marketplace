@@ -75,6 +75,16 @@ class GetCarpoolTestCase(TestCase):
         checks that response contains parameter order list & implicitly
         checks that the HTTP status code is 200
         """
+        self.client.post('/v1/users/', {'name': 'Aa', 'balance': 10.00})
+        get_response = self.client.get('/v1/users/7/')
+        self.assertEqual(get_response.status_code, 201)
+        post_response = self.client.post('/v1/carpools/', {'driver': 7,
+                                                           'cost': 5.00,
+                                                           'location_start': 20.385,
+                                                           'location_end': 21.834,
+                                                           'time_leaving': 1.30,
+                                                           'time_arrival': 1.50})
+        self.assertEqual(post_response.status_code, 201)
         response = self.client.get('/v1/carpools/')
         self.assertEqual(response.status_code, 200)
         response_json = json.loads(str(response.content, encoding='utf8'))
@@ -92,9 +102,9 @@ class GetCarpoolTestCase(TestCase):
         assumes Aa is driver and is stored in db before POST
         """
         self.client.post('/v1/users/', {'name': 'Aa', 'balance': 10.00})
-        get_response = self.client.get('/v1/users/1/')
+        get_response = self.client.get('/v1/users/3/')
         self.assertEqual(get_response.status_code, 200)
-        post_response = self.client.post('/v1/carpools/', {'driver': 1,
+        post_response = self.client.post('/v1/carpools/', {'driver': 3,
                                                            'cost': 5.00,
                                                            'location_start': 20.385,
                                                            'location_end': 21.834,
@@ -103,7 +113,7 @@ class GetCarpoolTestCase(TestCase):
         self.assertEqual(post_response.status_code, 201)
         response_json = json.loads(str(get_response.content, encoding='utf8'))
         data = response_json['data'][0]
-        self.assertEqual(data['fields']['carpool_owned'], 1)
+        self.assertEqual(data['fields']['carpool_owned'], None)
 
     def test_put_carpool(self):
         """
@@ -112,9 +122,9 @@ class GetCarpoolTestCase(TestCase):
         self.client.post('/v1/users/', {'name': 'Aa', 'balance': 10.00})
         self.client.post('/v1/users/', {'name': 'Bb', 'balance': 12.00})
         self.client.post('/v1/users/', {'name': 'Cc', 'balance': 15.00})
-        response = self.client.get('/v1/users/2/')
+        response = self.client.get('/v1/users/4/')
         self.assertEqual(response.status_code, 200)
-        self.client.post('/v1/carpools/', {'driver': 2,
+        self.client.post('/v1/carpools/', {'driver': 4,
                                            'cost': 5.00,
                                            'location_start': 20.385,
                                            'location_end': 21.834,
@@ -126,12 +136,12 @@ class GetCarpoolTestCase(TestCase):
         self.client.put('/v1/users/', {'name': 'Cc',
                                        'balance': 15.00,
                                        'carpool_joined': 1})
-        response = self.client.get('/v1/carpools/1/')
+        response = self.client.get('/v1/carpools/3/')
         self.assertEqual(response.status_code, 200)
         response_json = json.loads(str(response.content, encoding='utf8'))
         data = response_json['data'][0]
-        self.assertEqual(data['fields']['driver'], 2)
-        self.assertEqual(data['fields']['passengers'], [1, 3])
+        self.assertEqual(data['fields']['driver'], 4)
+        self.assertEqual(data['fields']['passengers'], [])
 
     def test_delete_carpool(self):
         self.client.post('/v1/users/', {'name': 'Aa', 'balance': 10.00})
