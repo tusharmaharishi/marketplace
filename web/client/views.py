@@ -1,22 +1,25 @@
 import requests
 from django.shortcuts import render
 
-BASE_API = 'http://model-api:8000/v1/'
+BASE_API = 'http://exp-api:8000/'
 
 
 def get_home_page(request):
-    carpools = requests.get(BASE_API + 'carpools/').json()
-    data = carpools['data']
+    response = requests.get(BASE_API + 'v1/latest/').json()
+    data = response['carpools']
     return render(request, 'index.html', {'latest_rides': data})
 
 
 def get_users(request):
-    res = requests.get(BASE_API + 'users/').json()
-    data = res['data']
+    response = requests.get(BASE_API + 'v1/users/').json()
+    data = response['data']
     return render(request, 'list_user.html', {'user_list': data})
 
 
 def get_user_detail(request, pk):
-    res = requests.get(BASE_API + 'users/' + pk + '/').json()
-    data = res['data']
-    return render(request, 'list_user.html', {'user_list': data})
+    response = requests.get(BASE_API + 'v1/users/' + pk + '/').json()
+    if isinstance(response, str):
+        render(request, 'list_user.html')
+    else:
+        data = response['data']
+        return render(request, 'list_user.html', {'user_list': data})

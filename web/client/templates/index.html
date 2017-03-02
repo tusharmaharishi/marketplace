@@ -71,7 +71,7 @@
       <hr>
       
       <div class="panel panel-default">
-        <div class="panel-heading"><a href="">Latest Rides</a></div>
+        <div class="panel-heading"><a href="users/">Latest Rides</a></div>
       </div>
       {% for ride in latest_rides %}
       <p>Driver ID: {{ride.fields.driver}}, from {{ride.fields.location_start}} to {{ride.fields.location_end}} </p>
@@ -87,7 +87,7 @@
       <hr>
       
       <div class="panel panel-default">
-        <div class="panel-heading"><a href="">Most Popular Drivers</a></div>
+        <div class="panel-heading"><a href="users/">Most Popular Drivers</a></div>
       </div>
       {% for ride in latest_rides %}
       <p>Driver ID: {{ride.fields.driver}}</p>

@@ -27,7 +27,7 @@ web:
     image: tp33/django 
     container_name: web
     links:
-      - model:model-api # TODO: Change back to exp-api when exp api built
+      - exp:exp-api
     ports:
       - "8080:8000"
     volumes:
