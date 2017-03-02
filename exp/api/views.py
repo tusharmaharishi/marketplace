@@ -1,21 +1,35 @@
-from rest_framework.views import APIView
 import requests
+from django.http import JsonResponse
+
+MODEL_API = 'http://model-api:8000/'
 
 
-MODEL_API = 'http://model-api:8000/v1/'
-
-# user registers with a carpool
-
-class UserListByTimeandLocation(APIView):
-    pass
+def index(request):
+    if request.method == 'GET':
+        return JsonResponse({'status': '200 OK', 'message': 'This is the experience API entry point.'}, status=200)
 
 
-class CarpoolListByTimeandLocation(APIView):
-    location_start = 10.0
-    time_leaving = 12.30
+def get_user_detail(request, pk):
+    if request.method == 'GET':
+        response = requests.get(MODEL_API + 'v1/users/' + pk + '/')
+        if response['status'] == '200 OK':
+            return JsonResponse(response)
+        else:
+            return response['message']
 
-    def get(self, request, time_arrival, location_end):
-        if request.method == 'GET':
-            res = requests.get(MODEL_API + 'carpools/').json()
+
+def get_users(request):
+    if request.method == 'GET':
+        response = requests.get(MODEL_API + 'v1/users/')
+        return JsonResponse(response, safe=False)
 
 
+def get_latest_data(request):
+    if request.method == 'GET':
+        data = {}
+        carpools_response = requests.get(MODEL_API + 'v1/carpools/').json()
+        users_response = requests.get(MODEL_API + 'v1/users/').json()
+        if carpools_response and users_response:
+            data['carpools'] = carpools_response['data']
+            data['users'] = users_response['data']
+            return JsonResponse(data, safe=False, status=200)
