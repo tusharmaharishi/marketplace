@@ -11,7 +11,7 @@ def index(request):
 
 def get_user_detail(request, pk):
     if request.method == 'GET':
-        response = requests.get(MODEL_API + 'v1/users/' + pk + '/')
+        response = requests.get(MODEL_API + 'v1/users/' + pk + '/').json()
         if response['status'] == '200 OK':
             return JsonResponse(response)
         else:
@@ -20,8 +20,8 @@ def get_user_detail(request, pk):
 
 def get_users(request):
     if request.method == 'GET':
-        response = requests.get(MODEL_API + 'v1/users/')
-        return JsonResponse(response, safe=False)
+        response = requests.get(MODEL_API + 'v1/users/').json()
+        return JsonResponse(response)
 
 
 def get_latest_data(request):
