@@ -17,11 +17,12 @@ class GetUserTestCase(TestCase):
         checks that response contains parameter order list & implicitly
         checks that the HTTP status code is 200
         """
+        self.client.post('/v1/users/', {'name': 'Aa', 'balance': 12.00})
         response = self.client.get('/v1/users/')
         self.assertEqual(response.status_code, 200)
         response_json = json.loads(str(response.content, encoding='utf8'))
         self.assertContains(response, 'data')
-        self.assertEqual(response_json['count'], 0)
+        self.assertEqual(response_json['count'], 1)
 
     def test_respond_failure(self):
         response = self.client.get('/v1/users/0/')
@@ -62,7 +63,7 @@ class GetUserTestCase(TestCase):
         pass  # nothing to tear down
 
 
-class GetCarpoolTestCAse(TestCase):
+class GetCarpoolTestCase(TestCase):
     def setUp(self):
         """
         setUp method is called before each test
