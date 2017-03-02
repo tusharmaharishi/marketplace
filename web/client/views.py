@@ -17,9 +17,9 @@ def get_users(request):
 
 
 def get_user_detail(request, pk):
-    response = requests.get(BASE_API + 'v1/users/' + pk + '/').json()
-    if isinstance(response, str):
-        render(request, 'list_user.html')
-    else:
-        data = response['data']
+    response = requests.get(BASE_API + 'v1/users/' + pk + '/')
+    try:
+        data = response.json()['data']
         return render(request, 'list_user.html', {'user_list': data})
+    except:
+        return render(request, 'list_user.html')
