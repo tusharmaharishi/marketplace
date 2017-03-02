@@ -77,7 +77,7 @@ class GetCarpoolTestCase(TestCase):
         """
         self.client.post('/v1/users/', {'name': 'Aa', 'balance': 10.00})
         get_response = self.client.get('/v1/users/7/')
-        self.assertEqual(get_response.status_code, 201)
+        self.assertEqual(get_response.status_code, 200)
         post_response = self.client.post('/v1/carpools/', {'driver': 7,
                                                            'cost': 5.00,
                                                            'location_start': 20.385,
@@ -89,7 +89,7 @@ class GetCarpoolTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         response_json = json.loads(str(response.content, encoding='utf8'))
         self.assertContains(response, 'data')
-        self.assertEqual(response_json['count'], 0)
+        self.assertEqual(response_json['count'], 1)
 
     def test_respond_failure(self):
         response = self.client.get('/v1/carpools/0/')
