@@ -1,11 +1,11 @@
+from django.core.validators import MinValueValidator
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class User(models.Model):
     name = models.CharField(max_length=128)
-    # username = models.CharField(max_length=128)
-    # password = models.CharField(max_length=128)
+    username = models.CharField(max_length=128)
+    password = models.CharField(max_length=128)
     balance = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     carpool_owned = models.ForeignKey(  # user is driver, user deletes himself, carpool is deleted
         'Carpool',
@@ -41,3 +41,9 @@ class Carpool(models.Model):
     location_end = models.FloatField(default=8.8)
     time_leaving = models.FloatField(default=8.8)
     time_arrival = models.FloatField(default=8.8)
+
+
+class Authenticator(models.Model):
+    username = models.CharField(max_length=128)
+    authenticator = models.CharField(max_length=256, primary_key=True)
+    date_created = models.DateTimeField(auto_now_add=True)

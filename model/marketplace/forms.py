@@ -1,20 +1,21 @@
 from django import forms
 
-from .models import User, Carpool
-
-
-class LoginForm(forms.Form):
-    username = forms.CharField(max_length=128)
-    password = forms.CharField(max_length=128, widget=forms.PasswordInput)
+from .models import User, Carpool, Authenticator
 
 
 class UserForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['name', 'balance', 'carpool_owned', 'carpool_joined']
+        fields = ['name', 'username', 'password', 'balance', 'carpool_owned', 'carpool_joined']
 
 
 class CarpoolForm(forms.ModelForm):
     class Meta:
         model = Carpool
         fields = ['driver', 'cost', 'location_start', 'location_end', 'time_leaving', 'time_arrival']
+
+
+class AuthenticatorForm(forms.ModelForm):
+    class Meta:
+        model = Authenticator
+        fields = ['username', 'authenticator', 'date_created']

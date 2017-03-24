@@ -1,11 +1,15 @@
+import hmac
 import json
-
+import os
+from datetime import datetime
+from django.conf import settings
+from django.contrib.auth import hashers
 from django.core import serializers
 from django.http import JsonResponse
 from rest_framework.views import APIView
 
-from .forms import UserForm, CarpoolForm
-from .models import User, Carpool
+from .forms import UserForm, CarpoolForm, AuthenticatorForm
+from .models import User, Carpool, Authenticator
 
 
 def index(request):
@@ -13,11 +17,30 @@ def index(request):
         return JsonResponse({'status': '200 OK', 'message': 'This is the model API entry point.'}, status=200)
 
 
-def get_user(pk):
-    try:
-        return User.objects.get(pk=pk)
-    except User.DoesNotExist:
-        return None
+def get_auth(authenticator=None, username=None):
+    if authenticator:
+        try:
+            return Authenticator.objects.get(authenticator=authenticator)
+        except Authenticator.DoesNotExist:
+            return None
+    if username:
+        try:
+            return Authenticator.objects.get(username=username)
+        except Authenticator.DoesNotExist:
+            return None
+
+
+def get_user(pk=None, username=None):
+    if pk:
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return None
+    if username:
+        try:
+            return User.objects.get(username=username)
+        except User.DoesNotExist:
+            return None
 
 
 def get_carpool(pk):
@@ -92,7 +115,7 @@ class UserDetail(APIView):
         if request.method == 'GET':
             user = get_user(pk=pk)
             response = {}
-            if user is not None:
+            if user:
                 response['data'] = json.loads(serializers.serialize('json', [user, ]))
                 response['count'] = 1
                 response['status'] = '200 OK'
@@ -103,7 +126,7 @@ class UserDetail(APIView):
     def put(self, request, pk):
         if request.method == 'PUT':
             user = get_user(pk=pk)
-            if user is not None:
+            if user:
                 form = UserForm(request.data, instance=user)
                 return update_user(form=form)
             else:
@@ -112,11 +135,51 @@ class UserDetail(APIView):
     def delete(self, request, pk):
         if request.method == 'DELETE':
             user = get_user(pk=pk)
-            if user is not None:
+            if user:
                 user.delete()
                 return JsonResponse({'status': '204 No Content'}, status=204)
             else:
                 return JsonResponse({'status': '404 Not Found', 'message': 'This user does not exist.'}, status=404)
+
+
+class Authentication(APIView):
+    def get(self, request):
+
+    def post(self, request):
+        if request.method == 'POST':
+            form = UserForm(request.data)  # validate user input when creating authentication every time
+            user = get_user(username=form.username)
+            if not user:
+                return JsonResponse({'status': '404 Not Found', 'message': 'This username does not exist.'}, status=404)
+            response = {}
+            token = get_auth(username=form.username)
+            if token:
+                response['auth'] = token.authenticator
+                response['status'] = '409 Conflict'
+                response['message'] = 'This authenticator already exists.'
+                return JsonResponse(response, status=409)
+            elif hashers.check_password(form.password, user.password):
+                auth = hmac.new(
+                    key=settings.SECRET_KEY.encode('utf-8'),
+                    msg=os.urandom(32),
+                    digestmod='sha256',
+                ).hexdigest()
+                token = AuthenticatorForm({'username':form.username,
+                                           'authenticator': auth,
+                                           'date_created': datetime.now()})
+                token.save()
+                response['auth'] = auth
+                response['status'] = '201 Created'
+                response['message'] = 'Successfully created new authenticator for {}.'.format(form.username)
+                return JsonResponse(response, status=201)
+            else:
+                response['status'] = '400 Bad Request'
+                response['message'] = 'Failed to create new authenticator.'
+                return JsonResponse(response, status=400)
+
+    def delete(self, request):
+        if request.method == 'DELETE':
+            try:
 
 
 class CarpoolList(APIView):
@@ -148,7 +211,7 @@ class CarpoolDetail(APIView):
         if request.method == 'GET':
             carpool = get_carpool(pk=pk)
             response = {}
-            if carpool is not None:
+            if carpool:
                 response['data'] = json.loads(serializers.serialize('json', [carpool, ]))
                 response['count'] = 1
                 response['status'] = '200 OK'
@@ -159,7 +222,7 @@ class CarpoolDetail(APIView):
     def put(self, request, pk):
         if request.method == 'PUT':
             carpool = get_carpool(pk=pk)
-            if carpool is not None:
+            if carpool:
                 form = CarpoolForm(request.data, instance=carpool)
                 return update_carpool(form=form)
             else:
@@ -168,7 +231,7 @@ class CarpoolDetail(APIView):
     def delete(self, request, pk):
         if request.method == 'DELETE':
             carpool = get_carpool(pk=pk)
-            if carpool is not None:
+            if carpool:
                 carpool.delete()
                 return JsonResponse({'status': '204 No Content'}, status=204)
             else:
