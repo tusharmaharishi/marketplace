@@ -9,6 +9,19 @@ def index(request):
         return JsonResponse({'status': '200 OK', 'message': 'This is the experience API entry point.'}, status=200)
 
 
+def register_account(request):
+    if request.method == 'POST':
+        requests.post(MODEL_API + 'v1/users/')
+
+def login_account(request):
+
+
+
+def logout_account(request):
+
+
+
+
 def get_user_detail(request, pk):
     if request.method == 'GET':
         response = requests.get(MODEL_API + 'v1/users/' + pk + '/').json()

@@ -203,7 +203,6 @@ class Authentication(APIView):
                 if token:
                     token.delete()
                     return JsonResponse({'status': '204 No Content'}, status=204)
-
             if authenticator:
                 token = get_auth(authenticator=authenticator)
                 if token:
