@@ -2,10 +2,12 @@ import hmac
 import json
 import os
 from datetime import datetime
+
 from django.conf import settings
 from django.contrib.auth import hashers
 from django.core import serializers
 from django.http import JsonResponse
+from django.utils import timezone
 from rest_framework.views import APIView
 
 from .forms import UserForm, CarpoolForm, AuthenticatorForm
@@ -143,7 +145,24 @@ class UserDetail(APIView):
 
 
 class Authentication(APIView):
-    def get(self, request):
+    def get(self, request, authenticator):
+        if request.method == 'GET':
+            response = {}
+            token = get_auth(authenticator=authenticator)
+            if not token:
+                return JsonResponse({'status': '404 Not Found', 'message': 'This authenticator does not exist.'},
+                                    status=404)
+            else:
+                time_delta = (timezone.now() - token.date_created).days * 24 * 60
+                if time_delta <= 120:  # token cannot be longer than two hours
+                    response['auth'] = token.authenticator
+                    response['status'] = '200 OK'
+                    response['message'] = 'Authenticator is valid'
+                    return JsonResponse(response, status=200)
+                else:
+                    response['status'] = '404 Not Found'
+                    response['message'] = 'Authenticator expired'
+                    return JsonResponse(response, status=404)
 
     def post(self, request):
         if request.method == 'POST':
@@ -164,22 +183,34 @@ class Authentication(APIView):
                     msg=os.urandom(32),
                     digestmod='sha256',
                 ).hexdigest()
-                token = AuthenticatorForm({'username':form.username,
+                token = AuthenticatorForm({'username': form.username,
                                            'authenticator': auth,
                                            'date_created': datetime.now()})
                 token.save()
                 response['auth'] = auth
                 response['status'] = '201 Created'
-                response['message'] = 'Successfully created new authenticator for {}.'.format(form.username)
+                response['message'] = 'Authenticator was successfully created for {}.'.format(form.username)
                 return JsonResponse(response, status=201)
             else:
                 response['status'] = '400 Bad Request'
-                response['message'] = 'Failed to create new authenticator.'
+                response['message'] = 'Authenticator was not created.'
                 return JsonResponse(response, status=400)
 
-    def delete(self, request):
+    def delete(self, request, username=None, authenticator=None):
         if request.method == 'DELETE':
-            try:
+            if username:
+                token = get_auth(username=username)
+                if token:
+                    token.delete()
+                    return JsonResponse({'status': '204 No Content'}, status=204)
+
+            if authenticator:
+                token = get_auth(authenticator=authenticator)
+                if token:
+                    token.delete()
+                    return JsonResponse({'status': '204 No Content'}, status=204)
+            return JsonResponse({'status': '404 Not Found', 'message': 'This authenticator does not exist.'},
+                                status=404)
 
 
 class CarpoolList(APIView):
