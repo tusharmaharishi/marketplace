@@ -1,3 +1,5 @@
+import json
+
 import requests
 from django.http import JsonResponse
 
@@ -9,17 +11,23 @@ def index(request):
         return JsonResponse({'status': '200 OK', 'message': 'This is the experience API entry point.'}, status=200)
 
 
-def register_account(request):
+def register_new_user(request):
     if request.method == 'POST':
-        requests.post(MODEL_API + 'v1/users/')
-
-def login_account(request):
-
+        response = requests.post(MODEL_API + 'v1/users/', data=json.dumps(request.data))
+        return response
 
 
-def logout_account(request):
+def login_user(request):
+    if request.method == 'POST':
+        response = requests.post(MODEL_API + 'v1/auth/', data=json.dumps(request.data))
+        return response
 
 
+def logout_user(request):
+    if request.method == 'POST':
+        authenticator = request.data['authenticator']
+        response = requests.delete(MODEL_API + 'v1/auth/', kwargs={'authenticator': authenticator})
+        return response
 
 
 def get_user_detail(request, pk):

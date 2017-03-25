@@ -55,6 +55,8 @@ def get_carpool(pk):
 def update_user(form):
     response = {}
     if form.is_valid():
+        password = form.cleaned_data['password']
+        form.password = hashers.make_password(password=password)
         user = form.save()
         if user.carpool_joined:
             carpool = get_carpool(pk=user.carpool_joined.pk)
