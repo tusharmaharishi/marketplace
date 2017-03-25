@@ -7,7 +7,7 @@ from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.http import HttpResponseNotFound
 from django.template.defaulttags import register
 
-BASE_API = 'http://exp-api:8000/'
+BASE_API = 'http://exp-api:8000/api/'
 
 
 def get_home_page(request):

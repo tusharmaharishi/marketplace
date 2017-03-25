@@ -13,7 +13,7 @@ def index(request):
 
 def register_new_user(request):
     if request.method == 'POST':
-        response = requests.post(MODEL_API + 'v1/users/', data=json.dumps(request.data))
+        response = requests.post(MODEL_API + 'v1/users/', data=json.dumps(request.POST))
         return response
 
 
@@ -25,8 +25,8 @@ def login_user(request):
 
 def logout_user(request):
     if request.method == 'POST':
-        authenticator = request.data['authenticator']
-        response = requests.delete(MODEL_API + 'v1/auth/', kwargs={'authenticator': authenticator})
+        # authenticator = request.data['authenticator']
+        response = requests.delete(MODEL_API + 'v1/auth/' + request.data['username'])
         return response
 
 
