@@ -12,10 +12,17 @@ class UserForm(forms.ModelForm):
 class CarpoolForm(forms.ModelForm):
     class Meta:
         model = Carpool
-        fields = ['driver', 'cost', 'location_start', 'location_end', 'time_leaving', 'time_arrival']
+        fields = ['driver', 'cost', 'location_start_lat', 'location_start_lon', 'location_end_lat', 'location_end_lon',
+                  'time_leaving', 'time_arrival']
 
 
 class AuthenticatorForm(forms.ModelForm):
     class Meta:
         model = Authenticator
-        fields = ['username', 'authenticator', 'date_created']
+        fields = ['username', 'authenticator']
+
+
+class UserLoginForm(forms.Form):
+    class Meta:
+        model = User
+        fields = ['username', 'password']

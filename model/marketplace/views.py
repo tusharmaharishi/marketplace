@@ -115,9 +115,14 @@ class UserList(APIView):
 
 
 class UserDetail(APIView):
-    def get(self, request, pk):
+    user = None
+
+    def get(self, request, pk=None, username=None):
         if request.method == 'GET':
-            user = get_user(pk=pk)
+            if pk:
+                user = get_user(pk=pk)
+            if username:
+                user = get_user(username=username)
             response = {}
             if user:
                 response['data'] = json.loads(serializers.serialize('json', [user, ]))
@@ -127,18 +132,24 @@ class UserDetail(APIView):
             else:
                 return JsonResponse({'status': '404 Not Found', 'message': 'This user does not exist.'}, status=404)
 
-    def put(self, request, pk):
+    def put(self, request, pk=None, username=None):
         if request.method == 'PUT':
-            user = get_user(pk=pk)
+            if pk:
+                user = get_user(pk=pk)
+            if username:
+                user = get_user(username=username)
             if user:
                 form = UserForm(request.data, instance=user)
                 return update_user(form=form)
             else:
                 return JsonResponse({'status': '404 Not Found', 'message': 'This user does not exist.'}, status=404)
 
-    def delete(self, request, pk):
+    def delete(self, request, pk=None, username=None):
         if request.method == 'DELETE':
-            user = get_user(pk=pk)
+            if pk:
+                user = get_user(pk=pk)
+            if username:
+                user = get_user(username=username)
             if user:
                 user.delete()
                 return JsonResponse({'status': '204 No Content'}, status=204)
@@ -147,7 +158,7 @@ class UserDetail(APIView):
 
 
 class Authentication(APIView):
-    def get(self, request, authenticator):
+    def get(self, request, username=None, authenticator=None):
         if request.method == 'GET':
             response = {}
             token = get_auth(authenticator=authenticator)
@@ -166,7 +177,7 @@ class Authentication(APIView):
                     response['message'] = 'Authenticator expired'
                     return JsonResponse(response, status=404)
 
-    def post(self, request):
+    def post(self, request, username):
         if request.method == 'POST':
             form = UserForm(request.data)  # validate user input when creating authentication every time
             user = get_user(username=form.username)
@@ -200,16 +211,14 @@ class Authentication(APIView):
 
     def delete(self, request, username=None, authenticator=None):
         if request.method == 'DELETE':
+            token = None
             if username:
                 token = get_auth(username=username)
-                if token:
-                    token.delete()
-                    return JsonResponse({'status': '204 No Content'}, status=204)
             if authenticator:
                 token = get_auth(authenticator=authenticator)
-                if token:
-                    token.delete()
-                    return JsonResponse({'status': '204 No Content'}, status=204)
+            if token:
+                token.delete()
+                return JsonResponse({'status': '204 No Content'}, status=204)
             return JsonResponse({'status': '404 Not Found', 'message': 'This authenticator does not exist.'},
                                 status=404)
 
