@@ -10,13 +10,13 @@ from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework.views import APIView
 
-from .forms import UserForm, CarpoolForm, AuthenticatorForm
+from .forms import UserForm, CarpoolForm, AuthenticatorForm, UserLoginForm
 from .models import User, Carpool, Authenticator
 
 
 def index(request):
     if request.method == 'GET':
-        return JsonResponse({'status': '200 OK', 'message': 'This is the model API entry point.'}, status=200)
+        return JsonResponse({'status': '200 OK', 'detail': 'This is the model API entry point.'}, status=200)
 
 
 def get_auth(authenticator=None, username=None):
@@ -67,7 +67,7 @@ def update_user(form):
         return JsonResponse(response, status=201)
     else:
         response['status'] = '400 Bad Request'
-        response['message'] = form.errors
+        response['detail'] = form.errors
         return JsonResponse(response, status=400)
 
 
@@ -86,7 +86,7 @@ def update_carpool(form):
         return JsonResponse(response, status=201)
     else:
         response['status'] = '400 Bad Request'
-        response['message'] = form.errors
+        response['detail'] = form.errors
         return JsonResponse(response, status=400)
 
 
@@ -101,7 +101,7 @@ class UserList(APIView):
                 response['status'] = '200 OK'
                 return JsonResponse(response, status=200)
             else:
-                return JsonResponse({'status': '404 Not Found', 'message': 'These users do not exist.'}, status=404)
+                return JsonResponse({'status': '404 Not Found', 'detail': 'These users do not exist.'}, status=404)
 
     def post(self, request):
         if request.method == 'POST':
@@ -115,10 +115,9 @@ class UserList(APIView):
 
 
 class UserDetail(APIView):
-    user = None
-
     def get(self, request, pk=None, username=None):
         if request.method == 'GET':
+            user = None
             if pk:
                 user = get_user(pk=pk)
             if username:
@@ -130,10 +129,11 @@ class UserDetail(APIView):
                 response['status'] = '200 OK'
                 return JsonResponse(response, status=200)
             else:
-                return JsonResponse({'status': '404 Not Found', 'message': 'This user does not exist.'}, status=404)
+                return JsonResponse({'status': '404 Not Found', 'detail': 'This user does not exist.'}, status=404)
 
     def put(self, request, pk=None, username=None):
         if request.method == 'PUT':
+            user = None
             if pk:
                 user = get_user(pk=pk)
             if username:
@@ -142,10 +142,11 @@ class UserDetail(APIView):
                 form = UserForm(request.data, instance=user)
                 return update_user(form=form)
             else:
-                return JsonResponse({'status': '404 Not Found', 'message': 'This user does not exist.'}, status=404)
+                return JsonResponse({'status': '404 Not Found', 'detail': 'This user does not exist.'}, status=404)
 
     def delete(self, request, pk=None, username=None):
         if request.method == 'DELETE':
+            user = None
             if pk:
                 user = get_user(pk=pk)
             if username:
@@ -154,41 +155,22 @@ class UserDetail(APIView):
                 user.delete()
                 return JsonResponse({'status': '204 No Content'}, status=204)
             else:
-                return JsonResponse({'status': '404 Not Found', 'message': 'This user does not exist.'}, status=404)
+                return JsonResponse({'status': '404 Not Found', 'detail': 'This user does not exist.'}, status=404)
 
 
 class Authentication(APIView):
-    def get(self, request, username=None, authenticator=None):
-        if request.method == 'GET':
-            response = {}
-            token = get_auth(authenticator=authenticator)
-            if not token:
-                return JsonResponse({'status': '404 Not Found', 'message': 'This authenticator does not exist.'},
-                                    status=404)
-            else:
-                time_delta = (timezone.now() - token.date_created).days * 24 * 60
-                if time_delta <= 120:  # token cannot be longer than two hours
-                    response['auth'] = token.authenticator
-                    response['status'] = '200 OK'
-                    response['message'] = 'Authenticator is valid'
-                    return JsonResponse(response, status=200)
-                else:
-                    response['status'] = '404 Not Found'
-                    response['message'] = 'Authenticator expired'
-                    return JsonResponse(response, status=404)
-
-    def post(self, request, username):
+    def post(self, request):
         if request.method == 'POST':
-            form = UserForm(request.data)  # validate user input when creating authentication every time
+            form = UserLoginForm(request.data)  # validate user input when creating authentication every time
             user = get_user(username=form.username)
             if not user:
-                return JsonResponse({'status': '404 Not Found', 'message': 'This username does not exist.'}, status=404)
+                return JsonResponse({'status': '404 Not Found', 'detail': 'This username does not exist.'}, status=404)
             response = {}
             token = get_auth(username=form.username)
             if token:
                 response['auth'] = token.authenticator
                 response['status'] = '409 Conflict'
-                response['message'] = 'This authenticator already exists.'
+                response['detail'] = 'This authenticator already exists.'
                 return JsonResponse(response, status=409)
             elif hashers.check_password(form.password, user.password):
                 auth = hmac.new(
@@ -202,12 +184,37 @@ class Authentication(APIView):
                 token.save()
                 response['auth'] = auth
                 response['status'] = '201 Created'
-                response['message'] = 'Authenticator was successfully created for {}.'.format(form.username)
+                response['detail'] = 'Authenticator was successfully created for {}.'.format(form.username)
                 return JsonResponse(response, status=201)
             else:
                 response['status'] = '400 Bad Request'
-                response['message'] = 'Authenticator was not created.'
+                response['detail'] = 'Authenticator was not created.'
                 return JsonResponse(response, status=400)
+
+
+class AuthenticationCheck(APIView):
+    def get(self, request, username=None, authenticator=None):
+        if request.method == 'GET':
+            token = None
+            if username:
+                token = get_auth(username=username)
+            if authenticator:
+                token = get_auth(authenticator=authenticator)
+            response = {}
+            if token:
+                time_delta = (timezone.now() - token.date_created).days * 24 * 60
+                if time_delta <= 120:  # token cannot be longer than two hours
+                    response['auth'] = token.authenticator
+                    response['status'] = '200 OK'
+                    response['detail'] = 'Authenticator is valid'
+                    return JsonResponse(response, status=200)
+                else:
+                    response['status'] = '404 Not Found'
+                    response['detail'] = 'Authenticator expired'
+                    return JsonResponse(response, status=404)
+            else:
+                return JsonResponse({'status': '404 Not Found', 'detail': 'This authenticator does not exist.'},
+                                    status=404)
 
     def delete(self, request, username=None, authenticator=None):
         if request.method == 'DELETE':
@@ -219,8 +226,9 @@ class Authentication(APIView):
             if token:
                 token.delete()
                 return JsonResponse({'status': '204 No Content'}, status=204)
-            return JsonResponse({'status': '404 Not Found', 'message': 'This authenticator does not exist.'},
-                                status=404)
+            else:
+                return JsonResponse({'status': '404 Not Found', 'detail': 'This authenticator does not exist.'},
+                                    status=404)
 
 
 class CarpoolList(APIView):
@@ -234,7 +242,7 @@ class CarpoolList(APIView):
                 response['status'] = '200 OK'
                 return JsonResponse(response, status=200)
             else:
-                return JsonResponse({'status': '404 Not Found', 'message': 'These carpools do not exist.'}, status=404)
+                return JsonResponse({'status': '404 Not Found', 'detail': 'These carpools do not exist.'}, status=404)
 
     def post(self, request):
         if request.method == 'POST':
@@ -258,7 +266,7 @@ class CarpoolDetail(APIView):
                 response['status'] = '200 OK'
                 return JsonResponse(response, status=200)
             else:
-                return JsonResponse({'status': '404 Not Found', 'message': 'This carpool does not exist.'}, status=404)
+                return JsonResponse({'status': '404 Not Found', 'detail': 'This carpool does not exist.'}, status=404)
 
     def put(self, request, pk):
         if request.method == 'PUT':
@@ -267,7 +275,7 @@ class CarpoolDetail(APIView):
                 form = CarpoolForm(request.data, instance=carpool)
                 return update_carpool(form=form)
             else:
-                return JsonResponse({'status': '404 Not Found', 'message': 'This carpool does not exist.'}, status=404)
+                return JsonResponse({'status': '404 Not Found', 'detail': 'This carpool does not exist.'}, status=404)
 
     def delete(self, request, pk):
         if request.method == 'DELETE':
@@ -276,4 +284,4 @@ class CarpoolDetail(APIView):
                 carpool.delete()
                 return JsonResponse({'status': '204 No Content'}, status=204)
             else:
-                return JsonResponse({'status': '404 Not Found', 'message': 'This carpool does not exist.'}, status=404)
+                return JsonResponse({'status': '404 Not Found', 'detail': 'This carpool does not exist.'}, status=404)
