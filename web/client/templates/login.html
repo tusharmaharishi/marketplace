@@ -22,7 +22,7 @@
 
             <!-- Login -->
             {% block content %}
-                <form action="/login/" method="post">
+                <form action="/login" method="post">
                     {% csrf_token %}
                     {{ login_form.as_ul }}
                     <button type="submit" value="Submit">Login</button>

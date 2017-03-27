@@ -7,13 +7,13 @@ from django.shortcuts import render, redirect
 
 from .forms import UserLoginForm, UserRegistrationForm, CreateCarpoolForm
 
-BASE_API = 'http://exp-api:8000/v1/' # in docker VM, but in root computer, it's localhost:8002/v1/
+BASE_API = 'http://exp-api:8000/v1/'  # in docker VM, but in root computer, it's localhost:8002/v1/
 
 
 def get_carpools_latest(request):
-    response = requests.get(BASE_API + 'latest/').json()
-    data = response['carpools']
-    return render(request, 'index.html', {'latest_rides': data})
+    # response = requests.get(BASE_API + 'latest/').json()
+    # data = response['carpools']
+    return render(request, 'index.html')
 
 
 def get_users(request):
@@ -41,23 +41,43 @@ def login_required(f):
             if response['status'] == 200:
                 return f(request, *args, **kwargs)
         return response
+
     return wrap
 
 
-def login(request):
+def register_user(request):
     auth = request.COOKIES.get('auth')
     if auth:
         return redirect('index')
-    login_form = UserLoginForm(request.POST or None)
-    next_url = request.GET.get('next') or reverse('index')
-    if request.method == 'GET' or not login_form.is_valid():
-        return render(request, 'login.html', {'login_form': login_form, 'next': next_url})
-    print('in web', json.dumps(login_form.cleaned_data))
+    form = UserRegistrationForm(request.POST or None)
+    if request.method == 'GET' or not form.is_valid():
+        return render(request, "registration.html", {'registration_form': form})
+    if form.is_valid():
+        print('IN WEB {}'.format(form.cleaned_data))
+        print('IN WEB {}'.format(requests.post(BASE_API + 'registration/', data=json.dumps(form.cleaned_data))))
+        # response = requests.post(BASE_API + 'registration/', data=json.dumps(form.cleaned_data)).json()
+        # if not response or response['status'] != 200:
+        #     return render(request, "registration_rejected.html")
+        # else:
+        #     return render(request, "registration_success.html")
+    return render(request, "registration.html", {'registration_form': form})
 
-    response = requests.post(BASE_API + 'login/', data=json.dumps(login_form.cleaned_data)).json()
+
+def login_user(request):
+    auth = request.COOKIES.get('auth')
+    if auth:
+        return redirect('index')
+    form = UserLoginForm(request.POST or None)
+    next_url = request.GET.get('next') or reverse('index')
+    if request.method == 'GET' or not form.is_valid():
+        return render(request, 'login.html', {'login_form': form, 'next': next_url})
+    print('in web', json.dumps(form.cleaned_data))
+
+    response = requests.post(BASE_API + 'login/', data=json.dumps(form.cleaned_data)).json()
     print('in web', response)
     if not response or response['status'] != 200:
-        return render(request, 'login.html', {'login_form': login_form, 'next': next_url, 'login_message': 'Login failed'})
+        return render(request, 'login.html',
+                      {'login_form': form, 'next': next_url, 'login_message': 'Login failed'})
     authenticator = response['auth']
     next_url = reverse('index')
     response = HttpResponseRedirect(next_url)
@@ -90,9 +110,6 @@ def login(request):
     # resp = json.loads(ret)
     # # resp = json.loads(urllib.request.urlopen(urllib.request.Request(url, data)).read().decode('utf-8'))
 
-    if not resp or resp['status'] != 200:
-        return render(request, 'login.html', {'login_form': login_form, 'next': next, 'login_message': 'login failed'})
-
     authenticator = resp['auth']
     next = reverse('index.html')
     response = HttpResponseRedirect(next)
@@ -101,7 +118,7 @@ def login(request):
     return response
 
 
-def logout(request):
+def logout_user(request):
     url = BASE_API + "logout/"
     response = HttpResponseRedirect(reverse('index.html'))
     auth = request.COOKIES.get('auth')
@@ -160,26 +177,3 @@ def create_carpool(request):
                                                          'message': "Carpool failed to be created. Are you logged in?"})
     return render(request, "carpool_response.html",
                   {'createCarpoolForm': createCarpoolForm, 'next': next, 'message': "Carpool successfully created."})
-
-
-def registration(request):
-    if request.method == "POST":
-        form = UserRegistrationForm(request.POST)
-        if form.is_valid():
-            data = {'username': form.cleaned_data['username'],
-                    'password': form.cleaned_data["password1"]}
-            url = BASE_API + 'registration/'
-            data = urllib.parse.urlencode(data)
-            data = data.encode('utf-8')
-            req = urllib.request.Request(url, data)
-            response = urllib.request.urlopen(req)
-            ret = response.read().decode('utf-8')
-            new_user = json.loads(ret)
-            if new_user['status'] is False:
-                return render(request, "registration_rejected.html")
-            else:
-                return render(request, "registration_success.html")
-
-        else:
-            form = UserRegistrationForm()
-        return render(request, "registration.html", {'registration_form': form})

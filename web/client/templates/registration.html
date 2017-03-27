@@ -23,11 +23,13 @@
             <!-- Login -->
             {% block content %}
                 <div class="register-form">
-                    <form class="form-signin" action="/registration" method="post">
-                    {% csrf_token %}
-                    {{if registration_form.as_ul}}
-                    <button type="submit" value="Submit">Sign Up</button><br>
+                    <form class="form-signin" action="/registration/" method="post">
+                        {% csrf_token %}
+                        {{ registration_form.as_ul }}
+                        <button type="submit" value="Submit">Sign Up</button>
+                        <br>
                     </form>
+                </div>
             {% endblock %}
 
 

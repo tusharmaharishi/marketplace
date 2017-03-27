@@ -55,9 +55,9 @@ def get_carpool(pk):
 def update_user(form):
     response = {}
     if form.is_valid():
-        password = form.cleaned_data['password']
-        form.password = hashers.make_password(password=password)
-        user = form.save()
+        user = form.save(commit=False)
+        user.password = hashers.make_password(password=user.password)
+        user.save()
         if user.carpool_joined:
             carpool = get_carpool(pk=user.carpool_joined.pk)
             carpool.passengers.add(user)
@@ -169,6 +169,7 @@ class Authentication(APIView):
                     return JsonResponse({'status': 404, 'detail': 'This username does not exist.'}, status=404)
                 response = {}
                 token = get_auth(username=form.cleaned_data['username'])
+                print(hashers.check_password(form.cleaned_data['password'], user.password))
                 if token:
                     response['auth'] = token.authenticator
                     response['status'] = 409

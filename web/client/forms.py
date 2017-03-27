@@ -10,8 +10,8 @@ class UserLoginForm(forms.Form):
 
 
 class UserRegistrationForm(forms.Form):
-    # first_name = forms.CharField(initial = 'eg. John',widget=forms.TextInput(attrs={'class' : 'form-control'}))
-    # last_name = forms.CharField(initial = 'eg. lennon',widget=forms.TextInput(attrs={'class' : 'form-control'}))
+    name = forms.CharField(label='Enter your full name',
+                           widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Thomas Pinckney'}))
     username = forms.CharField(label='Enter username',
                                widget=forms.TextInput(attrs={'id': 'username', 'placeholder': 'tp33'}), required=True)
     password1 = forms.CharField(label='Enter password',

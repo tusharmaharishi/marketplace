@@ -16,50 +16,51 @@
     <div class="row">
         <div class="col-xs-8" id="left">
             {% if user.is_authenticated %}
-            <h2>RideShare Homepage</h2>
+                <h2>RideShare Homepage</h2>
 
-            <!-- item list -->
-            <div class="panel panel-default">
-                <div class="panel-heading"><a href="">My Carpools</a></div>
-            </div>
-            <p>Coming soon!</p>
+                <!-- item list -->
+                <div class="panel panel-default">
+                    <div class="panel-heading"><a href="">My Carpools</a></div>
+                </div>
+                <p>Coming soon!</p>
 
-            <hr>
+                <hr>
 
-            <div class="panel panel-default">
-                <div class="panel-heading"><a href="">My Balance</a></div>
-            </div>
-            <p>Coming soon!</p>
+                <div class="panel panel-default">
+                    <div class="panel-heading"><a href="">My Balance</a></div>
+                </div>
+                <p>Coming soon!</p>
 
-            <hr>
+                <hr>
 
-            <div class="panel panel-default">
-                <div class="panel-heading"><a href="users/">Latest Rides</a></div>
-            </div>
-            {% for ride in latest_rides %}
-                <p>Driver ID: {{ ride.fields.driver }}, from {{ ride.fields.location_start }}
-                    to {{ ride.fields.location_end }} </p>
-            {% endfor %}
-            <hr>
+                <div class="panel panel-default">
+                    <div class="panel-heading"><a href="users/">Latest Rides</a></div>
+                </div>
+                {% for ride in latest_rides %}
+                    <p>Driver ID: {{ ride.fields.driver }}, from {{ ride.fields.location_start }}
+                        to {{ ride.fields.location_end }} </p>
+                {% endfor %}
+                <hr>
 
-            <div class="panel panel-default">
-                <div class="panel-heading"><a href="">Most Popular Destinations</a></div>
-            </div>
-            {% for ride in latest_rides %}
-                <p>Destination: {{ ride.fields.location_end }} </p>
-            {% endfor %}
-            <hr>
+                <div class="panel panel-default">
+                    <div class="panel-heading"><a href="">Most Popular Destinations</a></div>
+                </div>
+                {% for ride in latest_rides %}
+                    <p>Destination: {{ ride.fields.location_end }} </p>
+                {% endfor %}
+                <hr>
 
-            <div class="panel panel-default">
-                <div class="panel-heading"><a href="users/">Most Popular Drivers</a></div>
-            </div>
-            {% for ride in latest_rides %}
-                <p>Driver ID: {{ ride.fields.driver }}</p>
-            {% endfor %}
-            <hr>
-            <!-- /item list -->
+                <div class="panel panel-default">
+                    <div class="panel-heading"><a href="users/">Most Popular Drivers</a></div>
+                </div>
+                {% for ride in latest_rides %}
+                    <p>Driver ID: {{ ride.fields.driver }}</p>
+                {% endfor %}
+                <hr>
+                <!-- /item list -->
             {% else %}
-            <a href="login/"> Login</a>
+                <a href="login/">Login</a><br>
+                <a href="registration/">Register an account</a>
             {% endif %}
         </div>
         <div class="col-xs-4"><!--map-canvas will be postioned here--></div>

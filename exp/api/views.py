@@ -4,7 +4,7 @@ import requests
 from django.http import JsonResponse
 from rest_framework.views import APIView
 
-from .forms import UserLoginForm
+from .forms import UserLoginForm, UserRegistrationForm
 
 MODEL_API = 'http://model-api:8000/v1/'  # in docker VM, but in root computer, it's localhost:8001/v1/
 
@@ -17,8 +17,12 @@ def index(request):
 class UserRegistration(APIView):
     def post(self, request):
         if request.method == 'POST':
-            response = requests.post(MODEL_API + 'users/', data=json.dumps(request.POST))
-            return response
+            form = UserRegistrationForm(request.POST)
+            if form.is_valid():
+                response = requests.post(MODEL_API + 'users/', data=json.dumps(form.cleaned_data)).json()
+                return JsonResponse(response)
+            else:
+                return JsonResponse({'status': 400, 'detail': 'User registration form is not valid.'})
 
 
 class UserLogin(APIView):
@@ -27,14 +31,11 @@ class UserLogin(APIView):
             print('in exp post {}'.format(json.dumps(request.POST)))
             form = UserLoginForm(request.POST)
             if form.is_valid():
-                if form.cleaned_data['username'] and form.cleaned_data['password']:
-                    print(json.dumps(form.cleaned_data))
-                    response = requests.post(MODEL_API + 'auth/', data=json.dumps(form.cleaned_data)).json()
-                    return JsonResponse(response)
-                else:
-                    return JsonResponse({'status': 400, 'detail': 'Login request is missing username and/or password.'})
+                print(json.dumps(form.cleaned_data))
+                response = requests.post(MODEL_API + 'auth/', data=json.dumps(form.cleaned_data)).json()
+                return JsonResponse(response)
             else:
-                return JsonResponse({'status': 404, 'detail': 'User login form is not valid.'})
+                return JsonResponse({'status': 400, 'detail': 'User login form is not valid.'})
 
 
 class UserLogout(APIView):
@@ -45,27 +46,37 @@ class UserLogout(APIView):
             return response
 
 
-def get_user_detail(request, pk):
-    if request.method == 'GET':
-        response = requests.get(MODEL_API + 'users/' + pk + '/').json()
-        if response['status'] == 200:
+class UserDetail(APIView):
+    def get(self, request, pk=None, username=None):
+        if request.method == 'GET':
+            if pk:
+                response = requests.get(MODEL_API + 'users/' + pk + '/').json()
+                return JsonResponse(response)
+            elif username:
+                response = requests.get(MODEL_API + 'users/' + username + '/').json()
+                return JsonResponse(response)
+
+
+class UsersFilter(APIView):
+    def get(self, request):
+        if request.method == 'GET':
+            response = requests.get(MODEL_API + 'users/').json()
             return JsonResponse(response)
-        else:
-            return response['message']
 
 
-def get_users(request):
-    if request.method == 'GET':
-        response = requests.get(MODEL_API + 'users/').json()
-        return JsonResponse(response)
+class CarpoolDetail(APIView):
+    def get(self, request, pk):
+        if request.method == 'GET':
+            response = requests.get(MODEL_API + 'carpools/' + pk)
 
 
-def get_latest_data(request):
-    if request.method == 'GET':
-        data = {}
-        carpools_response = requests.get(MODEL_API + 'carpools/').json()
-        users_response = requests.get(MODEL_API + 'users/').json()
-        if carpools_response and users_response:
-            data['carpools'] = carpools_response['data']
-            data['users'] = users_response['data']
-            return JsonResponse(data, safe=False, status=200)
+class CarpoolsFilter(APIView):
+    def get(self, request):
+        if request.method == 'GET':
+            data = {}
+            carpools_response = requests.get(MODEL_API + 'carpools/').json()
+            users_response = requests.get(MODEL_API + 'users/').json()
+            if carpools_response and users_response:
+                data['carpools'] = carpools_response['data']
+                data['users'] = users_response['data']
+                return JsonResponse(data, safe=False)
