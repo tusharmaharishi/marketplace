@@ -22,7 +22,7 @@ class AuthenticatorForm(forms.ModelForm):
         fields = ['username', 'authenticator']
 
 
-class UserLoginForm(forms.Form):
+class UserLoginForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['username', 'password']

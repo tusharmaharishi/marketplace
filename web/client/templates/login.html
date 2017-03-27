@@ -22,17 +22,12 @@
 
             <!-- Login -->
             {% block content %}
-            <form method='post'>
+                <form action="/login/" method="post">
                     {% csrf_token %}
                     {{ login_form.as_ul }}
-                    <button type="submit" value="Submit">Login</button><br>
-                <!--Username: <input type='text' name='username' id='username'/>
-                </br>
-                Password: <input type='password' name='password' id='password' />
-                </br>
-                <input type='submit' value='login' /> -->
-            </form>
-            {{login_message}}
+                    <button type="submit" value="Submit">Login</button>
+                </form>
+                {{ login_message }}
             {% endblock %}
 
 

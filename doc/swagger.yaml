@@ -1,0 +1,87 @@
+# Be aware that YAML has indentation based scoping.
+# Code completion support is available so start typing for available options.
+swagger: '2.0'
+info:
+  version: "1.0.0"
+  description: CS 4501 Internet Scale mobile app API documentation
+  title: Rideshare API
+# the domain of the service
+host: localhost:8002
+# array of all schemes that your API supports
+schemes:
+  - https
+# will be prefixed to all paths
+basePath: /v1
+produces:
+  - application/json
+paths:
+  /users:
+    # This is a HTTP operation
+    get:
+      summary: Gets all users.
+      # Describe this verb here. Note: you can use markdown
+      description: |
+        Gets `User` objects.
+        Optional query param of **size** determines
+        size of returned array
+      # This is array of GET operation parameters:
+      parameters:
+        # An example parameter that is in query and is required
+        - name: size
+          in: query
+          description: Size of array
+          required: true
+          type: number
+          format: double
+      # Expected responses for this operation:
+      responses:
+        # Response code
+        200:
+          description: Successful response
+          # A schema describing your response object.
+          # Use JSON Schema format
+          schema:
+            type: array
+            items:
+              title: User
+              type: object
+              properties:
+                name:
+                  type: string
+                single:
+                  type: boolean
+  /users/{id}:
+    # This is a HTTP operation
+    get:
+      summary: Gets user by id.
+      # Describe this verb here. Note: you can use markdown
+      description: |
+        Gets `User` objects.
+        Optional query param of **size** determines
+        size of returned array
+      # This is array of GET operation parameters:
+      parameters:
+        # An example parameter that is in query and is required
+        - name: id
+          in: path
+          description: Size of array
+          required: true
+          type: number
+          format: double
+      # Expected responses for this operation:
+      responses:
+        # Response code
+        200:
+          description: Successful response
+          # A schema describing your response object.
+          # Use JSON Schema format
+          schema:
+            type: array
+            items:
+              title: User
+              type: object
+              properties:
+                name:
+                  type: string
+                single:
+                  type: boolean                  

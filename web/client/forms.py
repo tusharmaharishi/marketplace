@@ -1,22 +1,25 @@
 from django import forms
 
 
-class LoginForm(forms.Form):
+class UserLoginForm(forms.Form):
+    username = forms.CharField(label='Enter username',
+                               widget=forms.TextInput(attrs={'id': 'username', 'placeholder': 'tp33'}), required=True)
+    password = forms.CharField(label='Enter password',
+                               widget=forms.TextInput(attrs={'id': 'password', 'placeholder': '********'}),
+                               required=True)
+
+
+class UserRegistrationForm(forms.Form):
     # first_name = forms.CharField(initial = 'eg. John',widget=forms.TextInput(attrs={'class' : 'form-control'}))
     # last_name = forms.CharField(initial = 'eg. lennon',widget=forms.TextInput(attrs={'class' : 'form-control'}))
-    username = forms.CharField(initial='eg. J.Lennon', widget=forms.TextInput(attrs={'id': 'username'}), required=True)
-    # email = forms.EmailField(initial = 'form: example@something.com',widget=forms.TextInput(attrs={'class' : 'form-control'}))
-    password = forms.CharField(initial='******', widget=forms.TextInput(attrs={'id': 'password'}), label='Password')
-    # password2 = forms.CharField(initial = '******',widget=forms.TextInput(attrs={'class' : 'form-control'}))
-
-
-class RegistrationForm(forms.Form):
-    username = forms.CharField(initial='eg. J.Lennon', widget=forms.TextInput(attrs={'id': 'username'}), required=True)
-    # email = forms.EmailField(initial = 'form: example@something.com',widget=forms.TextInput(attrs={'class' : 'form-control'}))
-    password = forms.CharField(initial='******', widget=forms.PasswordInput(attrs={'class': 'input_text'}),
-                               label='Password')
-    password2 = forms.CharField(initial='******', widget=forms.PasswordInput(attrs={'class': 'input_text'}),
-                                label='Password2')
+    username = forms.CharField(label='Enter username',
+                               widget=forms.TextInput(attrs={'id': 'username', 'placeholder': 'tp33'}), required=True)
+    password1 = forms.CharField(label='Enter password',
+                                widget=forms.TextInput(attrs={'class': 'input_text', 'placeholder': '********'}),
+                                required=True)
+    password2 = forms.CharField(label='Retype password',
+                                widget=forms.TextInput(attrs={'class': 'input_text', 'placeholder': '********'}),
+                                required=True)
 
     def clean_password2(self):
         pass1 = self.cleaned_data['password1']

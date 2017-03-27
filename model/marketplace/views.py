@@ -16,7 +16,7 @@ from .models import User, Carpool, Authenticator
 
 def index(request):
     if request.method == 'GET':
-        return JsonResponse({'status': '200 OK', 'detail': 'This is the model API entry point.'}, status=200)
+        return JsonResponse({'status': 200, 'detail': 'This is the model API entry point.'}, status=200)
 
 
 def get_auth(authenticator=None, username=None):
@@ -63,10 +63,10 @@ def update_user(form):
             carpool.passengers.add(user)
             carpool.save()
         response['data'] = json.loads(serializers.serialize('json', [user, ]))
-        response['status'] = '201 Created'
+        response['status'] = 201
         return JsonResponse(response, status=201)
     else:
-        response['status'] = '400 Bad Request'
+        response['status'] = 400
         response['detail'] = form.errors
         return JsonResponse(response, status=400)
 
@@ -82,10 +82,10 @@ def update_carpool(form):
                 User.objects.filter(pk=user_pk).update(carpool_joined=carpool.pk)
         user.save()
         response['data'] = json.loads(serializers.serialize('json', [carpool, ]))
-        response['status'] = '201 Created'
+        response['status'] = 201
         return JsonResponse(response, status=201)
     else:
-        response['status'] = '400 Bad Request'
+        response['status'] = 400
         response['detail'] = form.errors
         return JsonResponse(response, status=400)
 
@@ -98,10 +98,10 @@ class UserList(APIView):
             if users:
                 response['data'] = json.loads(serializers.serialize('json', users))
                 response['count'] = users.count()
-                response['status'] = '200 OK'
+                response['status'] = 200
                 return JsonResponse(response, status=200)
             else:
-                return JsonResponse({'status': '404 Not Found', 'detail': 'These users do not exist.'}, status=404)
+                return JsonResponse({'status': 404, 'detail': 'These users do not exist.'}, status=404)
 
     def post(self, request):
         if request.method == 'POST':
@@ -126,10 +126,10 @@ class UserDetail(APIView):
             if user:
                 response['data'] = json.loads(serializers.serialize('json', [user, ]))
                 response['count'] = 1
-                response['status'] = '200 OK'
+                response['status'] = 200
                 return JsonResponse(response, status=200)
             else:
-                return JsonResponse({'status': '404 Not Found', 'detail': 'This user does not exist.'}, status=404)
+                return JsonResponse({'status': 404, 'detail': 'This user does not exist.'}, status=404)
 
     def put(self, request, pk=None, username=None):
         if request.method == 'PUT':
@@ -142,7 +142,7 @@ class UserDetail(APIView):
                 form = UserForm(request.data, instance=user)
                 return update_user(form=form)
             else:
-                return JsonResponse({'status': '404 Not Found', 'detail': 'This user does not exist.'}, status=404)
+                return JsonResponse({'status': 404, 'detail': 'This user does not exist.'}, status=404)
 
     def delete(self, request, pk=None, username=None):
         if request.method == 'DELETE':
@@ -155,21 +155,22 @@ class UserDetail(APIView):
                 user.delete()
                 return JsonResponse({'status': '204 No Content'}, status=204)
             else:
-                return JsonResponse({'status': '404 Not Found', 'detail': 'This user does not exist.'}, status=404)
+                return JsonResponse({'status': 404, 'detail': 'This user does not exist.'}, status=404)
 
 
 class Authentication(APIView):
     def post(self, request):
         if request.method == 'POST':
+            print('in model {}'.format(request.POST))
             form = UserLoginForm(request.data)  # validate user input when creating authentication every time
             user = get_user(username=form.username)
             if not user:
-                return JsonResponse({'status': '404 Not Found', 'detail': 'This username does not exist.'}, status=404)
+                return JsonResponse({'status': 404, 'detail': 'This username does not exist.'}, status=404)
             response = {}
             token = get_auth(username=form.username)
             if token:
                 response['auth'] = token.authenticator
-                response['status'] = '409 Conflict'
+                response['status'] = 409
                 response['detail'] = 'This authenticator already exists.'
                 return JsonResponse(response, status=409)
             elif hashers.check_password(form.password, user.password):
@@ -183,11 +184,11 @@ class Authentication(APIView):
                                            'date_created': datetime.now()})
                 token.save()
                 response['auth'] = auth
-                response['status'] = '201 Created'
+                response['status'] = 201
                 response['detail'] = 'Authenticator was successfully created for {}.'.format(form.username)
                 return JsonResponse(response, status=201)
             else:
-                response['status'] = '400 Bad Request'
+                response['status'] = 400
                 response['detail'] = 'Authenticator was not created.'
                 return JsonResponse(response, status=400)
 
@@ -205,15 +206,15 @@ class AuthenticationCheck(APIView):
                 time_delta = (timezone.now() - token.date_created).days * 24 * 60
                 if time_delta <= 120:  # token cannot be longer than two hours
                     response['auth'] = token.authenticator
-                    response['status'] = '200 OK'
+                    response['status'] = 200
                     response['detail'] = 'Authenticator is valid'
                     return JsonResponse(response, status=200)
                 else:
-                    response['status'] = '404 Not Found'
+                    response['status'] = 404
                     response['detail'] = 'Authenticator expired'
                     return JsonResponse(response, status=404)
             else:
-                return JsonResponse({'status': '404 Not Found', 'detail': 'This authenticator does not exist.'},
+                return JsonResponse({'status': 404, 'detail': 'This authenticator does not exist.'},
                                     status=404)
 
     def delete(self, request, username=None, authenticator=None):
@@ -227,7 +228,7 @@ class AuthenticationCheck(APIView):
                 token.delete()
                 return JsonResponse({'status': '204 No Content'}, status=204)
             else:
-                return JsonResponse({'status': '404 Not Found', 'detail': 'This authenticator does not exist.'},
+                return JsonResponse({'status': 404, 'detail': 'This authenticator does not exist.'},
                                     status=404)
 
 
@@ -239,10 +240,10 @@ class CarpoolList(APIView):
             if carpools:
                 response['data'] = json.loads(serializers.serialize('json', carpools))
                 response['count'] = carpools.count()
-                response['status'] = '200 OK'
+                response['status'] = 200
                 return JsonResponse(response, status=200)
             else:
-                return JsonResponse({'status': '404 Not Found', 'detail': 'These carpools do not exist.'}, status=404)
+                return JsonResponse({'status': 404, 'detail': 'These carpools do not exist.'}, status=404)
 
     def post(self, request):
         if request.method == 'POST':
@@ -263,10 +264,10 @@ class CarpoolDetail(APIView):
             if carpool:
                 response['data'] = json.loads(serializers.serialize('json', [carpool, ]))
                 response['count'] = 1
-                response['status'] = '200 OK'
+                response['status'] = 200
                 return JsonResponse(response, status=200)
             else:
-                return JsonResponse({'status': '404 Not Found', 'detail': 'This carpool does not exist.'}, status=404)
+                return JsonResponse({'status': 404, 'detail': 'This carpool does not exist.'}, status=404)
 
     def put(self, request, pk):
         if request.method == 'PUT':
@@ -275,7 +276,7 @@ class CarpoolDetail(APIView):
                 form = CarpoolForm(request.data, instance=carpool)
                 return update_carpool(form=form)
             else:
-                return JsonResponse({'status': '404 Not Found', 'detail': 'This carpool does not exist.'}, status=404)
+                return JsonResponse({'status': 404, 'detail': 'This carpool does not exist.'}, status=404)
 
     def delete(self, request, pk):
         if request.method == 'DELETE':
@@ -284,4 +285,4 @@ class CarpoolDetail(APIView):
                 carpool.delete()
                 return JsonResponse({'status': '204 No Content'}, status=204)
             else:
-                return JsonResponse({'status': '404 Not Found', 'detail': 'This carpool does not exist.'}, status=404)
+                return JsonResponse({'status': 404, 'detail': 'This carpool does not exist.'}, status=404)
