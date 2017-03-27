@@ -25,15 +25,10 @@ class UserLogin(APIView):
     def post(self, request):
         if request.method == 'POST':
             print('in exp post {}'.format(json.dumps(request.POST)))
-            # data = request.POST
-            # body_unicode = request.body.decode('utf-8')
-            # print('in exp body unicode')
-            # print(body_unicode)
-            # data = json.loads(body_unicode)
             form = UserLoginForm(request.POST)
             if form.is_valid():
-                print('FORM DATA {}'.format(form.cleaned_data))
                 if form.cleaned_data['username'] and form.cleaned_data['password']:
+                    print(json.dumps(form.cleaned_data))
                     response = requests.post(MODEL_API + 'auth/', data=json.dumps(form.cleaned_data)).json()
                     return JsonResponse(response)
                 else:

@@ -161,40 +161,38 @@ class UserDetail(APIView):
 class Authentication(APIView):
     def post(self, request):
         if request.method == 'POST':
-            # body_unicode = request.body.decode('utf-8')
-            # print('in model {}'.format(request.body))
-            # data = json.loads(body_unicode)
-            # print('in model {}'.format(data))
             form = UserLoginForm(request.POST)  # validate user input when creating authentication
-            user = get_user(username=form.cleaned_data['username'])
-            if not user:
-                return JsonResponse({'status': 404, 'detail': 'This username does not exist.'}, status=404)
-            response = {}
-            token = get_auth(username=form.cleaned_data['username'])
-            if token:
-                response['auth'] = token.authenticator
-                response['status'] = 409
-                response['detail'] = 'This authenticator already exists.'
-                return JsonResponse(response, status=409)
-            elif hashers.check_password(form.cleaned_data['password'], user.password):
-                auth = hmac.new(
-                    key=settings.SECRET_KEY.encode('utf-8'),
-                    msg=os.urandom(32),
-                    digestmod='sha256',
-                ).hexdigest()
-                token = AuthenticatorForm({'username': form.cleaned_data['username'],
-                                           'authenticator': auth,
-                                           'date_created': datetime.now()})
-                token.save()
-                response['auth'] = auth
-                response['status'] = 201
-                response['detail'] = 'Authenticator was successfully created for {}.'.format(
-                    form.cleaned_data['username'])
-                return JsonResponse(response, status=201)
-            else:
-                response['status'] = 400
-                response['detail'] = 'Authenticator was not created.'
-                return JsonResponse(response, status=400)
+            if form.is_valid():
+                # print(form.cleaned_data)
+                user = get_user(username=form.cleaned_data['username'])
+                if not user:
+                    return JsonResponse({'status': 404, 'detail': 'This username does not exist.'}, status=404)
+                response = {}
+                token = get_auth(username=form.cleaned_data['username'])
+                if token:
+                    response['auth'] = token.authenticator
+                    response['status'] = 409
+                    response['detail'] = 'This authenticator already exists.'
+                    return JsonResponse(response, status=409)
+                elif hashers.check_password(form.cleaned_data['password'], user.password):
+                    auth = hmac.new(
+                        key=settings.SECRET_KEY.encode('utf-8'),
+                        msg=os.urandom(32),
+                        digestmod='sha256',
+                    ).hexdigest()
+                    token = AuthenticatorForm({'username': form.cleaned_data['username'],
+                                               'authenticator': auth,
+                                               'date_created': datetime.now()})
+                    token.save()
+                    response['auth'] = auth
+                    response['status'] = 201
+                    response['detail'] = 'Authenticator was successfully created for {}.'.format(
+                        form.cleaned_data['username'])
+                    return JsonResponse(response, status=201)
+                else:
+                    response['status'] = 400
+                    response['detail'] = 'Authenticator was not created.'
+                    return JsonResponse(response, status=400)
 
 
 class AuthenticationCheck(APIView):
