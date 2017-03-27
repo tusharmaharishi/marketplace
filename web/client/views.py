@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect
 
 from .forms import UserLoginForm, UserRegistrationForm, CreateCarpoolForm
 
-BASE_API = 'http://exp-api:8000/v1/'
+BASE_API = 'http://exp-api:8000/v1/' # in docker VM, but in root computer, it's localhost:8002/v1/
 
 
 def get_carpools_latest(request):
@@ -48,13 +48,12 @@ def login(request):
     auth = request.COOKIES.get('auth')
     if auth:
         return redirect('index')
-    body_unicode = request.body.decode('utf-8')
-    data = json.loads(body_unicode)
-    login_form = UserLoginForm(data or None)
+    login_form = UserLoginForm(request.POST or None)
     next_url = request.GET.get('next') or reverse('index')
     if request.method == 'GET' or not login_form.is_valid():
         return render(request, 'login.html', {'login_form': login_form, 'next': next_url})
     print('in web', json.dumps(login_form.cleaned_data))
+
     response = requests.post(BASE_API + 'login/', data=json.dumps(login_form.cleaned_data)).json()
     print('in web', response)
     if not response or response['status'] != 200:

@@ -2,9 +2,11 @@ import json
 
 import requests
 from django.http import JsonResponse
+from rest_framework.views import APIView
+
 from .forms import UserLoginForm
 
-MODEL_API = 'http://model-api:8000/v1/'
+MODEL_API = 'http://model-api:8000/v1/'  # in docker VM, but in root computer, it's localhost:8001/v1/
 
 
 def index(request):
@@ -12,33 +14,40 @@ def index(request):
         return JsonResponse({'status': 200, 'message': 'This is the experience API entry point.'}, status=200)
 
 
-def register_new_user(request):
-    if request.method == 'POST':
-        response = requests.post(MODEL_API + 'users/', data=json.dumps(request.POST))
-        return response
+class UserRegistration(APIView):
+    def post(self, request):
+        if request.method == 'POST':
+            response = requests.post(MODEL_API + 'users/', data=json.dumps(request.POST))
+            return response
 
 
-def login_user(request):
-    if request.method == 'POST':
-        body_unicode = request.body.decode('utf-8')
-        data = json.loads(body_unicode)
-        form = UserLoginForm(data)
-        if form.is_valid():
-            print('in exp {}'.format(form.cleaned_data))
-            username, password = form.cleaned_data['username'], form.cleaned_data['password']
-            # print('user: ', username, 'pass: ', password)
-            response = requests.post(MODEL_API + 'auth/', data=json.dumps(form.cleaned_data)).json()
-            print(response)
-            return JsonResponse(response)
-        else:
-            return JsonResponse({'status': 404, 'detail': 'login not working'})
+class UserLogin(APIView):
+    def post(self, request):
+        if request.method == 'POST':
+            print('in exp post {}'.format(json.dumps(request.POST)))
+            # data = request.POST
+            # body_unicode = request.body.decode('utf-8')
+            # print('in exp body unicode')
+            # print(body_unicode)
+            # data = json.loads(body_unicode)
+            form = UserLoginForm(request.POST)
+            if form.is_valid():
+                print('FORM DATA {}'.format(form.cleaned_data))
+                if form.cleaned_data['username'] and form.cleaned_data['password']:
+                    response = requests.post(MODEL_API + 'auth/', data=json.dumps(form.cleaned_data)).json()
+                    return JsonResponse(response)
+                else:
+                    return JsonResponse({'status': 400, 'detail': 'Login request is missing username and/or password.'})
+            else:
+                return JsonResponse({'status': 404, 'detail': 'User login form is not valid.'})
 
 
-def logout_user(request):
-    if request.method == 'POST':
-        # authenticator = request.data['authenticator']
-        response = requests.delete(MODEL_API + 'auth/' + request.POST['username'])
-        return response
+class UserLogout(APIView):
+    def post(self, request):
+        if request.method == 'POST':
+            # authenticator = request.data['authenticator']
+            response = requests.delete(MODEL_API + 'auth/' + request.POST['username'])
+            return response
 
 
 def get_user_detail(request, pk):

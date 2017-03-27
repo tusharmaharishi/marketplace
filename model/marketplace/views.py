@@ -111,7 +111,7 @@ class UserList(APIView):
     def delete(self, request):
         if request.method == 'DELETE':
             User.objects.all().delete()
-            return JsonResponse({'status': '204 No Content'}, status=204)
+            return JsonResponse({'status': 204}, status=204)
 
 
 class UserDetail(APIView):
@@ -153,7 +153,7 @@ class UserDetail(APIView):
                 user = get_user(username=username)
             if user:
                 user.delete()
-                return JsonResponse({'status': '204 No Content'}, status=204)
+                return JsonResponse({'status': 204}, status=204)
             else:
                 return JsonResponse({'status': 404, 'detail': 'This user does not exist.'}, status=404)
 
@@ -161,31 +161,35 @@ class UserDetail(APIView):
 class Authentication(APIView):
     def post(self, request):
         if request.method == 'POST':
-            print('in model {}'.format(request.POST))
-            form = UserLoginForm(request.data)  # validate user input when creating authentication every time
-            user = get_user(username=form.username)
+            # body_unicode = request.body.decode('utf-8')
+            # print('in model {}'.format(request.body))
+            # data = json.loads(body_unicode)
+            # print('in model {}'.format(data))
+            form = UserLoginForm(request.POST)  # validate user input when creating authentication
+            user = get_user(username=form.cleaned_data['username'])
             if not user:
                 return JsonResponse({'status': 404, 'detail': 'This username does not exist.'}, status=404)
             response = {}
-            token = get_auth(username=form.username)
+            token = get_auth(username=form.cleaned_data['username'])
             if token:
                 response['auth'] = token.authenticator
                 response['status'] = 409
                 response['detail'] = 'This authenticator already exists.'
                 return JsonResponse(response, status=409)
-            elif hashers.check_password(form.password, user.password):
+            elif hashers.check_password(form.cleaned_data['password'], user.password):
                 auth = hmac.new(
                     key=settings.SECRET_KEY.encode('utf-8'),
                     msg=os.urandom(32),
                     digestmod='sha256',
                 ).hexdigest()
-                token = AuthenticatorForm({'username': form.username,
+                token = AuthenticatorForm({'username': form.cleaned_data['username'],
                                            'authenticator': auth,
                                            'date_created': datetime.now()})
                 token.save()
                 response['auth'] = auth
                 response['status'] = 201
-                response['detail'] = 'Authenticator was successfully created for {}.'.format(form.username)
+                response['detail'] = 'Authenticator was successfully created for {}.'.format(
+                    form.cleaned_data['username'])
                 return JsonResponse(response, status=201)
             else:
                 response['status'] = 400
@@ -207,11 +211,11 @@ class AuthenticationCheck(APIView):
                 if time_delta <= 120:  # token cannot be longer than two hours
                     response['auth'] = token.authenticator
                     response['status'] = 200
-                    response['detail'] = 'Authenticator is valid'
+                    response['detail'] = 'Authenticator is valid.'
                     return JsonResponse(response, status=200)
                 else:
                     response['status'] = 404
-                    response['detail'] = 'Authenticator expired'
+                    response['detail'] = 'Authenticator expired.'
                     return JsonResponse(response, status=404)
             else:
                 return JsonResponse({'status': 404, 'detail': 'This authenticator does not exist.'},
@@ -226,7 +230,7 @@ class AuthenticationCheck(APIView):
                 token = get_auth(authenticator=authenticator)
             if token:
                 token.delete()
-                return JsonResponse({'status': '204 No Content'}, status=204)
+                return JsonResponse({'status': 204}, status=204)
             else:
                 return JsonResponse({'status': 404, 'detail': 'This authenticator does not exist.'},
                                     status=404)
@@ -253,7 +257,7 @@ class CarpoolList(APIView):
     def delete(self, request):
         if request.method == 'DELETE':
             Carpool.objects.all().delete()
-            return JsonResponse({'status': '204 No Content'}, status=204)
+            return JsonResponse({'status': 204}, status=204)
 
 
 class CarpoolDetail(APIView):
@@ -283,6 +287,6 @@ class CarpoolDetail(APIView):
             carpool = get_carpool(pk=pk)
             if carpool:
                 carpool.delete()
-                return JsonResponse({'status': '204 No Content'}, status=204)
+                return JsonResponse({'status': 204}, status=204)
             else:
                 return JsonResponse({'status': 404, 'detail': 'This carpool does not exist.'}, status=404)
