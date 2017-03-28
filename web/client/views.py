@@ -47,6 +47,8 @@ def get_carpool_detail(request, pk):
         return render(request, 'list_carpools.html')
 
 
+
+
 # def login_required(f):
 #     def wrap(request, *args, **kwargs):
 #         next_url = reverse('index')
