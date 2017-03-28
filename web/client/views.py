@@ -53,8 +53,15 @@ def register_user(request):
     if request.method == 'GET' or not form.is_valid():
         return render(request, "registration.html", {'registration_form': form})
     if form.is_valid():
-        response = requests.post(BASE_API + 'registration/', data=form.cleaned_data)
-        if not response or response.status_code != 200:
+        print(form.cleaned_data)
+        data = {}
+        data['name'] = form.cleaned_data['name']
+        data['username'] = form.cleaned_data['username']
+        data['password'] = form.cleaned_data['password2']
+        data['balance'] = 0.00
+        response = requests.post(BASE_API + 'registration/', data=data)
+        print(response.json())
+        if not response or response.status_code != 201:
             return render(request, "registration_rejected.html")
         else:
             return render(request, "registration_success.html")

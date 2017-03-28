@@ -52,7 +52,7 @@ def get_carpool(pk):
         return None
 
 
-def update_user(form, new_user=False):
+def update_user(form):
     response = {}
     if form.is_valid():
         user = form.save(commit=False)
