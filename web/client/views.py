@@ -53,13 +53,11 @@ def register_user(request):
     if request.method == 'GET' or not form.is_valid():
         return render(request, "registration.html", {'registration_form': form})
     if form.is_valid():
-        print('IN WEB {}'.format(form.cleaned_data))
-        print('IN WEB {}'.format(requests.post(BASE_API + 'registration/', data=form.cleaned_data)))
-        # response = requests.post(BASE_API + 'registration/', data=form.cleaned_data)).json()
-        # if not response or response['status'] != 200:
-        #     return render(request, "registration_rejected.html")
-        # else:
-        #     return render(request, "registration_success.html")
+        response = requests.post(BASE_API + 'registration/', data=form.cleaned_data)
+        if not response or response.status_code != 200:
+            return render(request, "registration_rejected.html")
+        else:
+            return render(request, "registration_success.html")
     return render(request, "registration.html", {'registration_form': form})
 
 
