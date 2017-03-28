@@ -32,9 +32,11 @@ class UserRegistrationForm(forms.Form):
 
 
 class CreateCarpoolForm(forms.Form):
-    driver = forms.CharField(widget=forms.TextInput(attrs={'id': 'driver'}))
-    cost = forms.CharField(widget=forms.TextInput(attrs={'id': 'cost'}))
-    location_start = forms.CharField(widget=forms.TextInput(attrs={'id': 'location_start'}))
-    location_end = forms.CharField(widget=forms.TextInput(attrs={'id': 'location_start'}))
-    time_leaving = forms.CharField(widget=forms.TextInput(attrs={'id': 'time_leaving'}))
-    time_arrival = forms.CharField(widget=forms.TextInput(attrs={'id': 'time_arrival'}))
+    driver = forms.CharField(widget=forms.TextInput(attrs={'id': 'driver', 'placeholder': 'Driver id, e.g. 4'}))
+    cost = forms.CharField(widget=forms.TextInput(attrs={'id': 'cost', 'placeholder': 'Decimal only, e.g. 1.50'}))
+    location_start_lat = forms.CharField(initial=38.853183, widget=forms.TextInput(attrs={'id': 'location_start_lat'}))
+    location_start_lon = forms.CharField(initial=38.853183, widget=forms.TextInput(attrs={'id': 'location_start_lon'}))
+    location_end_lat = forms.CharField(initial=-77.299025, widget=forms.TextInput(attrs={'id': 'location_end_lat'}))
+    location_end_lon = forms.CharField(initial=-77.299025, widget=forms.TextInput(attrs={'id': 'location_end_lon'}))
+    time_leaving = forms.CharField(initial="2017-04-05 16:45:00", widget=forms.TextInput(attrs={'id': 'time_leaving'}))
+    time_arrival = forms.CharField(initial="2017-04-06 19:05:00", widget=forms.TextInput(attrs={'id': 'time_arrival'}))

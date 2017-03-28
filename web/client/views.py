@@ -3,17 +3,18 @@ import json
 import requests
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 
 from .forms import UserLoginForm, UserRegistrationForm, CreateCarpoolForm
 
 BASE_API = 'http://exp-api:8000/v1/'  # in docker VM, but in root computer, it's localhost:8002/v1/
 
 
-def get_carpools_latest(request):
-    # response = requests.get(BASE_API + 'latest/').json()
-    # data = response['carpools']
-    return render(request, 'index.html')
+def get_home_page(request):
+    response = requests.get(BASE_API + 'carpools/').json()
+    carpools = response['carpools']
+    users = response['users']
+    return render(request, 'index.html', {'latest_rides': carpools, 'latest_drivers': users})
 
 
 def get_users(request):
@@ -31,13 +32,28 @@ def get_user_detail(request, pk):
         return render(request, 'list_user.html')
 
 
+def get_carpools(request):
+    response = requests.get(BASE_API + 'carpools/').json()
+    data = response['carpools']
+    return render(request, 'list_carpools.html', {'carpool_list': data})
+
+
+def get_carpool_detail(request, pk):
+    response = requests.get(BASE_API + 'carpools/' + pk + '/').json()
+    try:
+        data = response.json()['data']
+        return render(request, 'list_carpools.html', {'carpool_list': data})
+    except:
+        return render(request, 'list_carpools.html')
+
+
 def login_required(f):
     def wrap(request, *args, **kwargs):
         next_url = reverse('index')
         response = HttpResponseRedirect(next_url)
-        auth = request.COOKIES.get("auth")
+        auth = request.COOKIES.get('auth')
         if auth:
-            response = requests.get('http://exp-api:8000/api/v1/authenticate/' + str(auth)).json()
+            response = requests.get(BASE_API + '/auth/' + str(auth)).json()
             if response['status'] == 200:
                 return f(request, *args, **kwargs)
         return response
@@ -46,12 +62,9 @@ def login_required(f):
 
 
 def register_user(request):
-    auth = request.COOKIES.get('auth')
-    if auth:
-        return redirect('index')
     form = UserRegistrationForm(request.POST or None)
     if request.method == 'GET' or not form.is_valid():
-        return render(request, "registration.html", {'registration_form': form})
+        return render(request, 'registration.html', {'registration_form': form})
     if form.is_valid():
         print(form.cleaned_data)
         data = {}
@@ -61,16 +74,17 @@ def register_user(request):
         data['balance'] = 0.00
         response = requests.post(BASE_API + 'registration/', data=data)
         if response.status_code != 201:
-            return render(request, "registration_rejected.html")
+            return render(request, 'registration_rejected.html')
         else:
-            return render(request, "registration_success.html")
-    return render(request, "registration.html", {'registration_form': form})
+            return render(request, 'registration_success.html')
+    else:
+        return render(request, 'registration.html', {'registration_form': form})
 
 
 def login_user(request):
-    auth = request.COOKIES.get('auth')
-    if auth:
-        return redirect('index')
+    # auth = request.COOKIES.get('auth')
+    # if auth:
+    #     return redirect('index')
     form = UserLoginForm(request.POST or None)
     next_url = request.GET.get('next') or reverse('index')
     if request.method == 'GET' or not form.is_valid():
@@ -79,105 +93,73 @@ def login_user(request):
         print(form.cleaned_data)
         response = requests.post(BASE_API + 'login/', data=form.cleaned_data)
         print(response.json())
-        if response.status_code != 200:
+        if response.status_code != 201 and response.status_code != 409:
             return render(request, 'login.html',
                           {'login_form': form, 'next': next_url, 'login_message': 'Login failed'})
-        authenticator = response['auth']
+        response_json = response.json()
+        authenticator = response_json['auth']
         next_url = reverse('index')
         response = HttpResponseRedirect(next_url)
         response.set_cookie('auth', authenticator)
         return response
 
-    # if auth:
-    #     return redirect('index')
-    # f = login_form(request.POST)
-    # next = request.GET.get('next') or reverse('index.html')
-    #
-    # if request.method == 'GET':
-    #     return render(request, 'login.html', {'login_form': login_form, 'next': next})
-    #
-    # if not f.is_valid():  # what does this do?
-    #     return render(request, 'login.html', {'login_form': login_form, 'next': next})
-    #
-    # username = f.cleaned_data['username']
-    # password = f.cleaned_data['password']
-    #
-    # data = {'username': username, 'password': password}
-    #
-    # url = BASE_API + 'login/'
-    # resp = requests.post(url, data=data))
-    # data = urllib.parse.urlencode(data)
-    # data = data.encode('utf-8')
-    # req = urllib.request.Request(url, data)
-    # response = urllib.request.urlopen(req)
-    # ret = response.read().decode('utf-8')
-    # resp = json.loads(ret)
-    # # resp = json.loads(urllib.request.urlopen(urllib.request.Request(url, data)).read().decode('utf-8'))
 
-    authenticator = resp['auth']
-    next = reverse('index.html')
-    response = HttpResponseRedirect(next)
-
-    response.set_cookie("auth", authenticator)
+@login_required
+def logout_user(request):
+    auth = request.COOKIES.get('auth')
+    if auth:
+        response = requests.delete(BASE_API + 'logout/' + auth + '/')
+        print(response.status_code)
+        response_json = response.json()
+        print(response_json)
+        if response.status_code != 204:
+            return render(request, 'logout.html', {'log_message': 'Logout successful'})
+        else:
+            return render(request, 'logout.html', {'log_message': 'Logout failed'})
+    response = HttpResponseRedirect(reverse('index'))
+    response.delete_cookie('auth')
     return response
 
 
-def logout_user(request):
-    url = BASE_API + "logout/"
-    response = HttpResponseRedirect(reverse('index.html'))
-    auth = request.COOKIES.get('auth')
-    response.delete_cookie('auth')
-    authpass = {'auth': auth}
-
-    data = urllib.parse.urlencode(authpass)
-    data = data.encode('utf-8')
-    req = urllib.request.Request(url, data)
-    response = urllib.request.urlopen(req)
-    ret = response.read().decode('utf-8')
-    resp = json.loads(ret)
-    if (resp['status'] == True):
-        return render(request, "logout.html", {'log_message': 'Logout successfuk'})
-    else:
-        return render(request, "logout.html", {'log_message': 'Logout failure'})
-
-
 def create_carpool(request):
-    createCarpoolForm = CreateCarpoolForm()
-    next = reverse('index.html')
+    form = CreateCarpoolForm(request.POST or None)
+    next_url = reverse('index')
     auth = request.COOKIES.get('auth')
     if not auth:
-        return HttpReseponseRedirect(reverse("login") + "?next=" + reverse("create_carpool"))
-    if request.method == "GET":
-        return render(request, 'create_carpool.html', {'createCarpoolForm': createCarpoolForm, 'next': next})
+        return HttpResponseRedirect(reverse('login') + '?next=' + reverse('create_carpool'))
+    if request.method == 'GET' or not form.is_valid():
+        return render(request, 'create_carpool.html', {'createCarpoolForm': form, 'next': next_url})
+    if form.is_valid():
+        response = requests.post(BASE_API + 'carpools/', data=form.cleaned_data)
+        response_json = response.json()
+        print(response_json)
+        if response.status_code == 201:
+            return render(request, 'carpool_response.html',
+                          {'createCarpoolForm': form, 'next': next_url, 'detail': 'Carpool successfully created.'})
+        else:
+            return render(request, 'create_carpool.html',
+                          {'createCarpoolForm': form, 'next': next_url, 'error_message': response_json.get('detail')})
 
-    form = CreateCarpoolForm(request.POST)
-    if not form.is_valid():
-        return render(request, 'create_carpool.html', {'createCarpoolForm': createCarpoolForm, 'next': next})
 
-    driver = form.cleaned_data['driver']
-    # passengers = form.cleaned_data['passengers']
-    cost = form.cleaned_data['cost']
-    location_start = form.cleaned_data['location_start']
-    location_end = form.cleaned_data['location_end']
-    time_leaving = form.cleaned_data['time_leaving']
-    time_arrival = form.cleaned_data['time_arrival']
+            # driver = form.cleaned_data['driver']
+            # # passengers = form.cleaned_data['passengers']
+            # cost = form.cleaned_data['cost']
+            # location_start = form.cleaned_data['location_start']
+            # location_end = form.cleaned_data['location_end']
+            # time_leaving = form.cleaned_data['time_leaving']
+            # time_arrival = form.cleaned_data['time_arrival']
+            #
+            # data = {'driver': driver,
+            #         'cost': cost,
+            #         'location_start': location_start,
+            #         'location_end': location_end,
+            #         'time_leaving': time_leaving,
+            #         'time_arrival': time_arrival}
 
-    data = {"driver": driver,
-            "cost": cost,
-            "location_start": location_start,
-            "location_end": location_end,
-            "time_leaving": time_leaving,
-            "time_arrival": time_arrival}
-
-    url = BASE_API + 'create_carpool/'
-    data = urllib.parse.urlencode(data)
-    data = data.encode('utf-8')
-    req = urllib.request.Request(url, data)
-    response = urllib.request.urlopen(req)
-    ret = response.read().decode('utf-8')
-    resp = json.loads(ret)
-    if resp and not resp['status']:
-        return render(request, "carpool_response.html", {'createCarpoolForm': createCarpoolForm, 'next': next,
-                                                         'detail': "Carpool failed to be created. Are you logged in?"})
-    return render(request, "carpool_response.html",
-                  {'createCarpoolForm': createCarpoolForm, 'next': next, 'detail': "Carpool successfully created."})
+            # url = BASE_API + 'create_carpool/'
+            # data = urllib.parse.urlencode(data)
+            # data = data.encode('utf-8')
+            # req = urllib.request.Request(url, data)
+            # response = urllib.request.urlopen(req)
+            # ret = response.read().decode('utf-8')
+            # resp = json.loads(ret)

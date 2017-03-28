@@ -4,7 +4,7 @@ import requests
 from django.http import JsonResponse
 from rest_framework.views import APIView
 
-from .forms import UserLoginForm, UserRegistrationForm
+from .forms import UserLoginForm, UserRegistrationForm, CarpoolListingForm
 
 MODEL_API = 'http://model-api:8000/v1/'  # in docker VM, but in root computer, it's localhost:8001/v1/
 
@@ -68,7 +68,8 @@ class UsersFilter(APIView):
 class CarpoolDetail(APIView):
     def get(self, request, pk):
         if request.method == 'GET':
-            response = requests.get(MODEL_API + 'carpools/' + pk)
+            response = requests.get(MODEL_API + 'carpools/' + pk).json()
+            return JsonResponse(response)
 
 
 class CarpoolsFilter(APIView):
@@ -81,3 +82,14 @@ class CarpoolsFilter(APIView):
                 data['carpools'] = carpools_response['data']
                 data['users'] = users_response['data']
                 return JsonResponse(data, safe=False)
+
+    def post(self, request):
+        if request.method == 'POST':
+            form = CarpoolListingForm(request.POST)
+            if form.is_valid():
+                response = requests.post(MODEL_API + 'carpools/', data=form.cleaned_data)
+                response_json = response.json()
+                print(response_json)
+                return JsonResponse(response_json, status=response.status_code)
+            else:
+                return JsonResponse({'detail': form.errors}, status=400)

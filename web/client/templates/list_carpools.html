@@ -18,21 +18,25 @@
     <div class="row">
         <div class="col-xs-8" id="left">
 
-            <h2>Users Need Rides!</h2>
+            <h2>Rides Available!</h2>
 
             <!-- item list -->
             <div class="panel panel-default">
                 <div class="panel-heading"><a href="/">Go Back</a></div>
             </div>
-            {% if user_list %}
-                {% for user in user_list %}
-                    <a href="{{ user.pk }}">Name: {{ user.fields.name }}</a>
-                    <p>Balance: ${{ user.fields.balance }}</p>
+            {% if carpool_list %}
+                {% for carpool in carpool_list %}
+                    <a href="{{ carpool.pk }}">Driver: {{ carpool.fields.driver }}</a>
+                    <p>Cost: ${{ carpool.fields.cost }}</p>
+                    <p>Start: {{ carpool.fields.location_start_lat }}, {{ carpool.fields.location_start_lon }}</p>
+                    <p>End: {{ carpool.fields.location_end_lat }}, {{ carpool.fields.location_end_lon }}</p>
+                    <p>Time Leaving: {{ carpool.fields.time_leaving }}</p>
+                    <p>Time Arrival: {{ carpool.fields.time_arrival }}</p>
                     <hr>
                 {% endfor %}
             {% endif %}
-            {% if not user_list %}
-                <p>Sorry, that driver or passenger does not exist!</p>
+            {% if not carpool_list %}
+                <p>Sorry, that ride does not exist!</p>
             {% endif %}
         </div>
         <div class="col-xs-4"><!--map-canvas will be postioned here--></div>
@@ -40,4 +44,4 @@
     </div>
 </div>
 </body>
-</html>	
+</html>
