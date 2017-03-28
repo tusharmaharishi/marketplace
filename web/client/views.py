@@ -54,8 +54,8 @@ def register_user(request):
         return render(request, "registration.html", {'registration_form': form})
     if form.is_valid():
         print('IN WEB {}'.format(form.cleaned_data))
-        print('IN WEB {}'.format(requests.post(BASE_API + 'registration/', data=json.dumps(form.cleaned_data))))
-        # response = requests.post(BASE_API + 'registration/', data=json.dumps(form.cleaned_data)).json()
+        print('IN WEB {}'.format(requests.post(BASE_API + 'registration/', data=form.cleaned_data)))
+        # response = requests.post(BASE_API + 'registration/', data=form.cleaned_data)).json()
         # if not response or response['status'] != 200:
         #     return render(request, "registration_rejected.html")
         # else:
@@ -73,7 +73,7 @@ def login_user(request):
         return render(request, 'login.html', {'login_form': form, 'next': next_url})
     print('in web', json.dumps(form.cleaned_data))
 
-    response = requests.post(BASE_API + 'login/', data=json.dumps(form.cleaned_data)).json()
+    response = requests.post(BASE_API + 'login/', data=form.cleaned_data).json()
     print('in web', response)
     if not response or response['status'] != 200:
         return render(request, 'login.html',
@@ -101,7 +101,7 @@ def login_user(request):
     # data = {'username': username, 'password': password}
     #
     # url = BASE_API + 'login/'
-    # resp = requests.post(url, data=json.dumps(data))
+    # resp = requests.post(url, data=data))
     # data = urllib.parse.urlencode(data)
     # data = data.encode('utf-8')
     # req = urllib.request.Request(url, data)
@@ -174,6 +174,6 @@ def create_carpool(request):
     resp = json.loads(ret)
     if resp and not resp['status']:
         return render(request, "carpool_response.html", {'createCarpoolForm': createCarpoolForm, 'next': next,
-                                                         'message': "Carpool failed to be created. Are you logged in?"})
+                                                         'detail': "Carpool failed to be created. Are you logged in?"})
     return render(request, "carpool_response.html",
-                  {'createCarpoolForm': createCarpoolForm, 'next': next, 'message': "Carpool successfully created."})
+                  {'createCarpoolForm': createCarpoolForm, 'next': next, 'detail': "Carpool successfully created."})

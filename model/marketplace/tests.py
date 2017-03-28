@@ -28,7 +28,7 @@ class GetUserTestCase(TestCase):
         response = self.client.get('/v1/users/0/')
         response_json = json.loads(str(response.content, encoding='utf8'))
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response_json['message'], 'This user does not exist.')
+        self.assertEqual(response_json['detail'], 'This user does not exist.')
 
     def test_post_user(self):
         """
@@ -95,7 +95,7 @@ class GetCarpoolTestCase(TestCase):
         response = self.client.get('/v1/carpools/0/')
         response_json = json.loads(str(response.content, encoding='utf8'))
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response_json['message'], 'This carpool does not exist.')
+        self.assertEqual(response_json['detail'], 'This carpool does not exist.')
 
     def test_post_carpool(self):
         """

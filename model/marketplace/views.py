@@ -52,7 +52,7 @@ def get_carpool(pk):
         return None
 
 
-def update_user(form):
+def update_user(form, new_user=False):
     response = {}
     if form.is_valid():
         user = form.save(commit=False)
@@ -105,7 +105,9 @@ class UserList(APIView):
 
     def post(self, request):
         if request.method == 'POST':
-            form = UserForm(request.data)
+            if User.objects.filter(username=request.POST['username']).exists():
+                return JsonResponse({'detail': 'This username already exists. Please choose another one.'}, status=400)
+            form = UserForm(request.POST)
             return update_user(form=form)
 
     def delete(self, request):
@@ -120,7 +122,7 @@ class UserDetail(APIView):
             user = None
             if pk:
                 user = get_user(pk=pk)
-            if username:
+            elif username:
                 user = get_user(username=username)
             response = {}
             if user:
@@ -136,7 +138,7 @@ class UserDetail(APIView):
             user = None
             if pk:
                 user = get_user(pk=pk)
-            if username:
+            elif username:
                 user = get_user(username=username)
             if user:
                 form = UserForm(request.data, instance=user)
@@ -149,7 +151,7 @@ class UserDetail(APIView):
             user = None
             if pk:
                 user = get_user(pk=pk)
-            if username:
+            elif username:
                 user = get_user(username=username)
             if user:
                 user.delete()
@@ -250,7 +252,7 @@ class CarpoolList(APIView):
 
     def post(self, request):
         if request.method == 'POST':
-            form = CarpoolForm(request.data)
+            form = CarpoolForm(request.POST)
             return update_carpool(form=form)
 
     def delete(self, request):

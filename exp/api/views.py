@@ -11,7 +11,7 @@ MODEL_API = 'http://model-api:8000/v1/'  # in docker VM, but in root computer, i
 
 def index(request):
     if request.method == 'GET':
-        return JsonResponse({'status': 200, 'message': 'This is the experience API entry point.'}, status=200)
+        return JsonResponse({'detail': 'This is the experience API entry point.'}, status=200)
 
 
 class UserRegistration(APIView):
@@ -19,23 +19,23 @@ class UserRegistration(APIView):
         if request.method == 'POST':
             form = UserRegistrationForm(request.POST)
             if form.is_valid():
-                response = requests.post(MODEL_API + 'users/', data=json.dumps(form.cleaned_data)).json()
-                return JsonResponse(response)
+                response = requests.post(MODEL_API + 'users/', data=form.cleaned_data)
+                response_json = response.json()
+                return JsonResponse(response_json, status=response.status_code)
             else:
-                return JsonResponse({'status': 400, 'detail': 'User registration form is not valid.'})
+                return JsonResponse({'detail': form.errors}, status=400)
 
 
 class UserLogin(APIView):
     def post(self, request):
         if request.method == 'POST':
-            print('in exp post {}'.format(json.dumps(request.POST)))
             form = UserLoginForm(request.POST)
             if form.is_valid():
-                print(json.dumps(form.cleaned_data))
-                response = requests.post(MODEL_API + 'auth/', data=json.dumps(form.cleaned_data)).json()
-                return JsonResponse(response)
+                response = requests.post(MODEL_API + 'auth/', data=json.dumps(form.cleaned_data))
+                response_json = response.json()
+                return JsonResponse(response_json, status=response.status_code)
             else:
-                return JsonResponse({'status': 400, 'detail': 'User login form is not valid.'})
+                return JsonResponse({'detail': form.errors}, status=400)
 
 
 class UserLogout(APIView):
@@ -49,12 +49,13 @@ class UserLogout(APIView):
 class UserDetail(APIView):
     def get(self, request, pk=None, username=None):
         if request.method == 'GET':
+            response = None
             if pk:
-                response = requests.get(MODEL_API + 'users/' + pk + '/').json()
-                return JsonResponse(response)
+                response = requests.get(MODEL_API + 'users/' + pk + '/')
             elif username:
-                response = requests.get(MODEL_API + 'users/' + username + '/').json()
-                return JsonResponse(response)
+                response = requests.get(MODEL_API + 'users/' + username + '/')
+            response_json = response.json()
+            return JsonResponse(response_json, status=response.status_code)
 
 
 class UsersFilter(APIView):
