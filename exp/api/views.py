@@ -31,7 +31,7 @@ class UserLogin(APIView):
         if request.method == 'POST':
             form = UserLoginForm(request.POST)
             if form.is_valid():
-                response = requests.post(MODEL_API + 'auth/', data=json.dumps(form.cleaned_data))
+                response = requests.post(MODEL_API + 'auth/', data=form.cleaned_data)
                 response_json = response.json()
                 return JsonResponse(response_json, status=response.status_code)
             else:

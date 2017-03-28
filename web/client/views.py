@@ -60,8 +60,7 @@ def register_user(request):
         data['password'] = form.cleaned_data['password2']
         data['balance'] = 0.00
         response = requests.post(BASE_API + 'registration/', data=data)
-        print(response.json())
-        if not response or response.status_code != 201:
+        if response.status_code != 201:
             return render(request, "registration_rejected.html")
         else:
             return render(request, "registration_success.html")
@@ -76,18 +75,18 @@ def login_user(request):
     next_url = request.GET.get('next') or reverse('index')
     if request.method == 'GET' or not form.is_valid():
         return render(request, 'login.html', {'login_form': form, 'next': next_url})
-    print('in web', json.dumps(form.cleaned_data))
-
-    response = requests.post(BASE_API + 'login/', data=form.cleaned_data).json()
-    print('in web', response)
-    if not response or response['status'] != 200:
-        return render(request, 'login.html',
-                      {'login_form': form, 'next': next_url, 'login_message': 'Login failed'})
-    authenticator = response['auth']
-    next_url = reverse('index')
-    response = HttpResponseRedirect(next_url)
-    response.set_cookie('auth', authenticator)
-    return response
+    if form.is_valid():
+        print(form.cleaned_data)
+        response = requests.post(BASE_API + 'login/', data=form.cleaned_data)
+        print(response.json())
+        if response.status_code != 200:
+            return render(request, 'login.html',
+                          {'login_form': form, 'next': next_url, 'login_message': 'Login failed'})
+        authenticator = response['auth']
+        next_url = reverse('index')
+        response = HttpResponseRedirect(next_url)
+        response.set_cookie('auth', authenticator)
+        return response
 
     # if auth:
     #     return redirect('index')
