@@ -47,18 +47,18 @@ def get_carpool_detail(request, pk):
         return render(request, 'list_carpools.html')
 
 
-def login_required(f):
-    def wrap(request, *args, **kwargs):
-        next_url = reverse('index')
-        response = HttpResponseRedirect(next_url)
-        auth = request.COOKIES.get('auth')
-        if auth:
-            response = requests.get(BASE_API + '/auth/' + str(auth)).json()
-            if response['status'] == 200:
-                return f(request, *args, **kwargs)
-        return response
-
-    return wrap
+# def login_required(f):
+#     def wrap(request, *args, **kwargs):
+#         next_url = reverse('index')
+#         response = HttpResponseRedirect(next_url)
+#         auth = request.COOKIES.get('auth')
+#         if auth:
+#             response = requests.get(BASE_API + '/auth/' + str(auth)).json()
+#             if response['status'] == 200:
+#                 return f(request, *args, **kwargs)
+#         return response
+#
+#     return wrap
 
 
 def register_user(request):
@@ -104,15 +104,11 @@ def login_user(request):
         return response
 
 
-@login_required
 def logout_user(request):
     auth = request.COOKIES.get('auth')
     if auth:
         response = requests.delete(BASE_API + 'logout/' + auth + '/')
-        print(response.status_code)
-        response_json = response.json()
-        print(response_json)
-        if response.status_code != 204:
+        if response.status_code == 204:
             return render(request, 'logout.html', {'log_message': 'Logout successful'})
         else:
             return render(request, 'logout.html', {'log_message': 'Logout failed'})
@@ -122,11 +118,11 @@ def logout_user(request):
 
 
 def create_carpool(request):
-    form = CreateCarpoolForm(request.POST or None)
-    next_url = reverse('index')
     auth = request.COOKIES.get('auth')
     if not auth:
         return HttpResponseRedirect(reverse('login') + '?next=' + reverse('create_carpool'))
+    form = CreateCarpoolForm(request.POST or None)
+    next_url = reverse('index')
     if request.method == 'GET' or not form.is_valid():
         return render(request, 'create_carpool.html', {'createCarpoolForm': form, 'next': next_url})
     if form.is_valid():

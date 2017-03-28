@@ -39,11 +39,11 @@ class UserLogin(APIView):
 
 
 class UserLogout(APIView):
-    def post(self, request):
-        if request.method == 'POST':
+    def delete(self, request, authenticator):
+        if request.method == 'DELETE':
             # authenticator = request.data['authenticator']
-            response = requests.delete(MODEL_API + 'auth/' + request.POST['username'])
-            return response
+            response = requests.delete(MODEL_API + 'auth/' + authenticator + '/')
+            return JsonResponse({'detail': 'Deleted logout'}, status=204)
 
 
 class UserDetail(APIView):

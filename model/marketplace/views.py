@@ -209,12 +209,14 @@ class AuthenticationCheck(APIView):
             response = {}
             if token:
                 time_delta = (timezone.now() - token.date_created).days * 24 * 60
-                if time_delta <= 120:  # token cannot be longer than two hours
+                if time_delta <= 60:  # token cannot be longer than an hour
                     response['auth'] = token.authenticator
                     response['status'] = 200
                     response['detail'] = 'Authenticator is valid.'
                     return JsonResponse(response, status=200)
                 else:
+                    token.delete()
+                    response['auth'] = None
                     response['status'] = 404
                     response['detail'] = 'Authenticator expired.'
                     return JsonResponse(response, status=404)
