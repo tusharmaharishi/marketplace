@@ -2,16 +2,26 @@ import json
 
 import requests
 from django.http import JsonResponse
+from elasticsearch import Elasticsearch
+from kafka import KafkaProducer
 from rest_framework.views import APIView
 
 from .forms import UserLoginForm, UserRegistrationForm, CarpoolListingForm
 
 MODEL_API = 'http://model-api:8000/v1/'  # in docker VM, but in root computer, it's localhost:8001/v1/
+producer = KafkaProducer(bootstrap_servers='kafka:9092')
 
 
 def index(request):
     if request.method == 'GET':
         return JsonResponse({'detail': 'This is the experience API entry point.'}, status=200)
+
+
+def search(request):
+    query = request.POST['query']
+    es = Elasticsearch([{'host': 'es', 'port': 9200}])
+    results = es.search(index='carpool_index', body={'query': {'query_string': {'query': query}}, 'size': 10})
+    return JsonResponse(results)
 
 
 class UserRegistration(APIView):
@@ -89,7 +99,7 @@ class CarpoolsFilter(APIView):
             if form.is_valid():
                 response = requests.post(MODEL_API + 'carpools/', data=form.cleaned_data)
                 response_json = response.json()
-                print(response_json)
+                producer.send('new_carpools_topic', json.dumps(response_json).encode('utf-8'))
                 return JsonResponse(response_json, status=response.status_code)
             else:
                 return JsonResponse({'detail': form.errors}, status=400)

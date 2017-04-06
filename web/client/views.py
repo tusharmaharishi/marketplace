@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
-from .forms import UserLoginForm, UserRegistrationForm, CreateCarpoolForm
+from .forms import UserLoginForm, UserRegistrationForm, CreateCarpoolForm, SearchForm
 
 BASE_API = 'http://exp-api:8000/v1/'  # in docker VM, but in root computer, it's localhost:8002/v1/
 
@@ -139,25 +139,13 @@ def create_carpool(request):
                           {'createCarpoolForm': form, 'next': next_url, 'error_message': response_json.get('detail')})
 
 
-            # driver = form.cleaned_data['driver']
-            # # passengers = form.cleaned_data['passengers']
-            # cost = form.cleaned_data['cost']
-            # location_start = form.cleaned_data['location_start']
-            # location_end = form.cleaned_data['location_end']
-            # time_leaving = form.cleaned_data['time_leaving']
-            # time_arrival = form.cleaned_data['time_arrival']
-            #
-            # data = {'driver': driver,
-            #         'cost': cost,
-            #         'location_start': location_start,
-            #         'location_end': location_end,
-            #         'time_leaving': time_leaving,
-            #         'time_arrival': time_arrival}
-
-            # url = BASE_API + 'create_carpool/'
-            # data = urllib.parse.urlencode(data)
-            # data = data.encode('utf-8')
-            # req = urllib.request.Request(url, data)
-            # response = urllib.request.urlopen(req)
-            # ret = response.read().decode('utf-8')
-            # resp = json.loads(ret)
+def search_carpools(request):
+    search_form = SearchForm(request.POST or None)
+    next_url = reverse('index') or request.GET.get('next')
+    if request.method == 'GET':
+        return render(request, 'search.html', {'search_form': search_form, 'next': next_url})
+    if search_form.is_valid():
+        response = requests.post(BASE_API + 'search/', data=json.dumps({'query': search_form.cleaned_data['search']}))
+        response_json = response.json()
+        print(response_json)
+        return render(request, 'search.html', {'data': response_json})
