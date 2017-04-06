@@ -40,3 +40,7 @@ class CreateCarpoolForm(forms.Form):
     location_end_lon = forms.CharField(initial=-77.299025, widget=forms.TextInput(attrs={'id': 'location_end_lon'}))
     time_leaving = forms.CharField(initial="2017-04-05 16:45:00", widget=forms.TextInput(attrs={'id': 'time_leaving'}))
     time_arrival = forms.CharField(initial="2017-04-06 19:05:00", widget=forms.TextInput(attrs={'id': 'time_arrival'}))
+
+
+class SearchForm(forms.Form):
+    search = forms.CharField(widget=forms.TextInput(attrs={'id': 'query', 'size': 100}))
