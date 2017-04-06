@@ -1,5 +1,4 @@
 model:
-    # build: .
     image: tp33/django 
     container_name: model
     external_links:
@@ -11,7 +10,6 @@ model:
     command: bash -c "pip install \"djangorestframework==3.5.3\" && python manage.py makemigrations && python manage.py migrate && python manage.py loaddata fixtures/db.json && mod_wsgi-express start-server --working-directory ./ --reload-on-changes ./model/wsgi.py --log-to-terminal"
 
 exp:
-    # build: .
     image: tp33/django 
     container_name: exp
     links:
@@ -23,7 +21,6 @@ exp:
     command: bash -c "pip install \"requests==2.13.0\" && pip install \"djangorestframework==3.5.3\" && mod_wsgi-express start-server --reload-on-changes ./exp/wsgi.py --log-to-terminal"
 
 web:
-    # build: .
     image: tp33/django 
     container_name: web
     links:
@@ -33,3 +30,17 @@ web:
     volumes:
       - ./web:/app
     command: bash -c "pip install \"requests==2.13.0\" && pip install \"djangorestframework==3.5.3\" && mod_wsgi-express start-server --reload-on-changes ./web/wsgi.py --log-to-terminal"
+
+kafka:
+    image: spotify/kafka
+    container_name: kafka
+    environment:
+      ADVERTISED_HOST: kafka
+      ADVERTISED_PORT: 9092
+    hostname: kafka
+
+es:
+    image: elasticsearch:2.0
+    container_name: es
+    ports:
+      - "9200:9200"
