@@ -1,58 +1,58 @@
 model:
-    image: tp33/django 
-    container_name: model
-    external_links:
-      -  mysql:db
-    volumes:
-      - ./model:/app
-    ports:
-      - "8001:8000"
-    command: bash -c "pip install \"djangorestframework==3.5.3\" && python manage.py makemigrations && python manage.py migrate && python manage.py loaddata fixtures/db.json && mod_wsgi-express start-server --working-directory ./ --reload-on-changes ./model/wsgi.py --log-to-terminal"
+  image: tp33/django
+  container_name: model
+  external_links:
+    -  mysql:db
+  volumes:
+    - ./model:/app
+  ports:
+    - "8001:8000"
+  command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py loaddata fixtures/db.json && mod_wsgi-express start-server --working-directory ./ --reload-on-changes ./model/wsgi.py --log-to-terminal"
 
 exp:
-    image: tp33/django 
-    container_name: exp
-    links:
-      - model:model-api
-      - kafka:kafka
-      - es:es
-    volumes:
-      - ./exp:/app
-    ports:
-      - "8002:8000"
-    command: bash -c "pip install \"requests==2.13.0\" && pip install \"djangorestframework==3.5.3\" && mod_wsgi-express start-server --reload-on-changes ./exp/wsgi.py --log-to-terminal"
+  image: tp33/django
+  container_name: exp
+  links:
+    - model:model-api
+    - kafka:kafka
+    - es:es
+  volumes:
+    - ./exp:/app
+  ports:
+    - "8002:8000"
+  command: bash -c "pip install -r requirements.txt && mod_wsgi-express start-server --reload-on-changes ./exp/wsgi.py --log-to-terminal"
 
 web:
-    image: tp33/django 
-    container_name: web
-    links:
-      - exp:exp-api
-    ports:
-      - "8080:8000"
-    volumes:
-      - ./web:/app
-    command: bash -c "pip install \"requests==2.13.0\" && pip install \"djangorestframework==3.5.3\" && mod_wsgi-express start-server --reload-on-changes ./web/wsgi.py --log-to-terminal"
+  image: tp33/django
+  container_name: web
+  links:
+    - exp:exp-api
+  ports:
+    - "8000:8000"
+  volumes:
+    - ./web:/app
+  command: bash -c "pip install -r requirements.txt && mod_wsgi-express start-server --reload-on-changes ./web/wsgi.py --log-to-terminal"
 
 kafka:
-    image: spotify/kafka
-    container_name: kafka
-    environment:
-      ADVERTISED_HOST: kafka
-      ADVERTISED_PORT: 9092
-    hostname: kafka
+  image: spotify/kafka
+  container_name: kafka
+  environment:
+    ADVERTISED_HOST: kafka
+    ADVERTISED_PORT: 9092
+  hostname: kafka
 
 es:
-    image: elasticsearch:2.0
-    container_name: es
-    ports:
-      - "9200:9200"
+  image: elasticsearch:2.0
+  container_name: es
+  ports:
+    - "9200:9200"
 
 batch:
-    image: tp33/django
-    container_name: batch
-    links:
-      - kafka:kafka
-      - es:es
-    volumes:
-      - ./exp:/app
-    command: bash -c "python ./api/batch.py"
+  image: tp33/django
+  container_name: batch
+  links:
+    - kafka:kafka
+    - es:es
+  volumes:
+    - ./exp:/app
+  command: bash -c "python ./api/batch.py"

@@ -1,6 +1,7 @@
-# Credits to @samuelhavron
-sudo: false
-dist: trusty # google-cloud-engine mod of ubuntu 14.04.3 LTS
+# https://blog.travis-ci.com/2015-10-14-opening-up-ubuntu-trusty-beta/
+sudo: required
+dist: trusty
+
 language: python
 python:
   - "3.5"

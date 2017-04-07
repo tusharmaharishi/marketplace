@@ -1,9 +1,11 @@
-# Rideshare
+# RideShare
+
+[![Build Status](https://travis-ci.org/bryanchen18/marketplace.png?branch=master)](https://travis-ci.org/bryanchen18/marketplace)
 
 ### Setup
 1. Make sure mysql is running, then `docker start mysql`
 2. From the project root directory, `docker-compose up`
-4. `http://localhost:8080`
+4. `http://localhost:8000`
 
 ### User Stories
 - Story 1: As a user I want to be able to select a group to find a ride.
