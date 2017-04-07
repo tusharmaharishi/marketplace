@@ -1,8 +1,8 @@
 #!/bin/bash
 
-sleep 20
+sleep 15
 
-if [[ -e /app/db/cs4501 ]] ; then
+if [[ -e /app/db/cs4501 ]]; then
     mysql -uroot -p'$3cureUS' -h db -Bse \
     "drop database if exists cs4501;
     create database cs4501 character set utf8;
@@ -20,3 +20,8 @@ else
 fi
 
 echo "Successfully created 'cs4501' table with root user 'www'@'%'"
+
+find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
+find . -path "*/migrations/*.pyc"  -delete
+
+echo "Successfully deleted old migrations"

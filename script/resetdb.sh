@@ -1,14 +1,24 @@
 #!/bin/bash
 set -e
 
-docker rm -f exp model es kafka batch web &> /dev/null || {
-    echo "Failed to remove some container(s)"
-    echo "Try docker ps -a"
-}
+echo "Removing container(s)..."
 
-docker stop mysql mysql-cmdline &> /dev/null {
+cmd="$(docker ps -a -q)"
+
+if [[ ${#cmd} -gt 25 ]]; then
+    docker rm -f exp model es kafka batch web &> /dev/null || {
+        echo "Failed to remove other container(s)"
+        echo "Try docker ps -a"
+        exit 1
+    }
+fi
+
+echo "Restarting mysql container(s)..."
+
+docker stop mysql mysql-cmdline &> /dev/null || {
     echo "Failed to stop mysql container(s)"
     echo "Try docker ps -a"
+    exit 1
 }
 
 docker start mysql mysql-cmdline &> /dev/null || {
@@ -18,17 +28,22 @@ docker start mysql mysql-cmdline &> /dev/null || {
 
 sleep 2
 
+echo "Dropping old database..."
+
 docker exec -it mysql-cmdline bash -c \
-"mysql -uroot -p'\$3cureUS' -h db -Bse \"drop database cs4501;
+"mysql -uroot -p'\$3cureUS' -h db -Bse \"
+drop user if exists 'www'@'%';
+flush privileges;
+drop database if exists cs4501;
 create database cs4501 character set utf8;
 grant all on *.* to 'www'@'%'; \"; " &> /dev/null || {
-    echo "Failed to clear mysql database."
+    echo "Failed to clear mysql database"
     exit 2
 }
 
-echo "Successfully reset mysql database"
+echo "Successfully cleared mysql database"
 
 find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
 find . -path "*/migrations/*.pyc"  -delete
 
-echo "Successfully deleted migrations"
+echo "Successfully deleted old migrations"
