@@ -6,7 +6,7 @@ services:
     volumes:
       - ../db:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: $3cureUS
+      MYSQL_ROOT_PASSWORD: $$3cureUS  # escapes the $ using $$
     networks:
       - main
   mysql-cmdline:
