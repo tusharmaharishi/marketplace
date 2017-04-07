@@ -1,5 +1,24 @@
 version: "2"
 services:
+  mysql:
+    container_name: mysql
+    image: mysql:5.7.17
+    volumes:
+      - ../db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: $3cureUS
+    networks:
+      - main
+  mysql-cmdline:
+    container_name: mysql-cmdline
+    image: mysql:5.7.17
+    links:
+      - mysql:db
+    volumes:
+      - ./:/app
+    command: bash -c "chmod 775 makedb.sh && ./makedb.sh"
+    networks:
+      - main
   model:
     image: tp33/django
     container_name: model
@@ -10,7 +29,8 @@ services:
     ports:
       - "8001:8000"
     command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py loaddata fixtures/db.json && mod_wsgi-express start-server --working-directory ./ --reload-on-changes ./model/wsgi.py --log-to-terminal"
-
+    networks:
+      - main
   exp:
     image: tp33/django
     container_name: exp
@@ -23,7 +43,8 @@ services:
     ports:
       - "8002:8000"
     command: bash -c "pip install -r requirements.txt && mod_wsgi-express start-server --reload-on-changes ./exp/wsgi.py --log-to-terminal"
-
+    networks:
+      - main
   web:
     image: tp33/django
     container_name: web
@@ -34,7 +55,8 @@ services:
     volumes:
       - ./web:/app
     command: bash -c "pip install -r requirements.txt && mod_wsgi-express start-server --reload-on-changes ./web/wsgi.py --log-to-terminal"
-
+    networks:
+      - main
   kafka:
     image: spotify/kafka
     container_name: kafkastar
@@ -42,13 +64,15 @@ services:
       ADVERTISED_HOST: kafka
       ADVERTISED_PORT: 9092
     hostname: kafka
-
+    networks:
+      - main
   es:
     image: elasticsearch:2.0
     container_name: es
     ports:
       - "9200:9200"
-
+    networks:
+      - main
   batch:
     image: tp33/django
     container_name: batch
@@ -58,3 +82,7 @@ services:
     volumes:
       - ./exp:/app
     command: bash -c "python ./api/batch.py"
+    networks:
+      - main
+networks:
+  main:

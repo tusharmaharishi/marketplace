@@ -12,15 +12,16 @@ services:
   - docker # default is docker 1.8.2 and docker-compose 1.4.2 (as of Oct. 2016)
 
 #install:
+#  - mkdir ~/cs4501/
+#  - mkdir ~/cs4501/db/
+#  -
 
 before_script:
   - mkdir ~/cs4501/
   - mkdir ~/cs4501/db/
   - mkdir ~/cs4501/app/
-  - mv -v ./{.[!.],}* ~/cs4501/app/
   - cd ~/cs4501/app/
-  - docker start mysql
-  - docker-compose up -d
+  - docker-compose up -d  # daemon process -d goes in background
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start" # X Virtual Framebuffer to imitate a display
   - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add - # install chrome for selenium
