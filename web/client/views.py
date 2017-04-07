@@ -1,3 +1,4 @@
+
 import json
 
 import requests
@@ -94,7 +95,6 @@ def login_user(request):
     if form.is_valid():
         print(form.cleaned_data)
         response = requests.post(BASE_API + 'login/', data=form.cleaned_data)
-        print(response.json())
         if response.status_code != 201 and response.status_code != 409:
             return render(request, 'login.html',
                           {'login_form': form, 'next': next_url, 'login_message': 'Login failed'})
@@ -148,4 +148,4 @@ def search_carpools(request):
         response = requests.post(BASE_API + 'search/', data=json.dumps({'query': search_form.cleaned_data['search']}))
         response_json = response.json()
         print(response_json)
-        return render(request, 'search.html', {'data': response_json})
+        return render(request, 'search_result.html', {'data': response_json})

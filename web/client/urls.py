@@ -13,5 +13,5 @@ urlpatterns = [
     url(r'^logout/$', views.logout_user, name="logout"),
     url(r'^create_carpool/$', views.create_carpool, name="create_carpool"),
     url(r'^registration/$', views.register_user, name="registration"),
-    url(r'^search/$', views.search_carpools, name='search')
+    url(r'^search/$', views.search_carpools , name='search')
 ]	
