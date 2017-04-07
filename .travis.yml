@@ -30,12 +30,10 @@ before_script:
   - sudo apt-get update
   - sudo apt-get install google-chrome-stable
   - sleep 90 # need to give time for containers and xvfb to start
-  - docker logs models
-  - docker logs mysql-cmdline
 
 script:
   - >
-    docker exec -it models bash -c
+    docker exec -it model bash -c
     "pip install -r requirement.txt && python manage.py test"
     # run Django unit tests on models
 #  - >
