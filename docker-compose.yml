@@ -15,12 +15,14 @@ services:
     links:
       - mysql:db
     volumes:
-      - ./:/app
-    command: bash -c "chmod 775 makedb.sh && ./makedb.sh"
+      - ./script:/app
+    command: bash -c "chmod 775 /app/makedb.sh && /app/makedb.sh"
     networks:
       - main
   model:
     image: tp33/django
+    depends_on:
+      - mysql
     container_name: model
     external_links:
       -  mysql:db
@@ -28,11 +30,13 @@ services:
       - ./model:/app
     ports:
       - "8001:8000"
-    command: bash -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py loaddata fixtures/db.json && mod_wsgi-express start-server --working-directory ./ --reload-on-changes ./model/wsgi.py --log-to-terminal"
+    command: bash -c "sleep 30; pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py loaddata fixtures/db.json && mod_wsgi-express start-server --working-directory ./ --reload-on-changes ./model/wsgi.py --log-to-terminal"
     networks:
       - main
   exp:
     image: tp33/django
+    depends_on:
+      - mysql
     container_name: exp
     links:
       - model:model-api
@@ -47,6 +51,8 @@ services:
       - main
   web:
     image: tp33/django
+    depends_on:
+      - mysql
     container_name: web
     links:
       - exp:exp-api
@@ -59,7 +65,7 @@ services:
       - main
   kafka:
     image: spotify/kafka
-    container_name: kafkastar
+    container_name: kafka
     environment:
       ADVERTISED_HOST: kafka
       ADVERTISED_PORT: 9092
