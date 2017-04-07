@@ -20,6 +20,7 @@ before_script:
   - mkdir ~/cs4501/
   - mkdir ~/cs4501/db/
   - mkdir ~/cs4501/app/
+  - mv -v ./{.[!.],}* ~/cs4501/app/
   - cd ~/cs4501/app/
   - docker-compose up -d  # daemon process -d goes in background
   - "export DISPLAY=:99.0"
