@@ -17,6 +17,14 @@ def index(request):
         return JsonResponse({'detail': 'This is the experience API entry point.'}, status=200)
 
 
+def success_response(response):
+    pass
+
+
+def failure_response(response):
+    pass
+
+
 def search(request):
     query = request.POST['query']
     es = Elasticsearch([{'host': 'es', 'port': 9200}])

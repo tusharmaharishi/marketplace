@@ -8,7 +8,7 @@ from django.contrib.auth import hashers
 from django.core import serializers
 from django.http import JsonResponse
 from django.utils import timezone
-from rest_framework.views import APIView
+from django.views.generic.base import View
 
 from .forms import UserForm, CarpoolForm, AuthenticatorForm, UserLoginForm
 from .models import User, Carpool, Authenticator
@@ -19,7 +19,17 @@ def index(request):
         return JsonResponse({'status': 200, 'detail': 'This is the model API entry point.'}, status=200)
 
 
-def get_auth(authenticator=None, username=None):
+def success_response(status_code, detail, auth_token=None, data=None):
+    response = {'detail': detail, 'auth_token': auth_token, 'data': data}
+    return JsonResponse(response, status=status_code)
+
+
+def failure_response(status_code, detail, auth_token=None):
+    response = {'detail': detail, 'auth_token': auth_token}
+    return JsonResponse(response, status=status_code)
+
+
+def get_authenticator(authenticator=None, username=None):
     if authenticator:
         try:
             return Authenticator.objects.get(authenticator=authenticator)
@@ -90,7 +100,7 @@ def update_carpool(form):
         return JsonResponse(response, status=400)
 
 
-class UserList(APIView):
+class UserList(View):
     def get(self, request, **kwargs):
         if request.method == 'GET':
             users = User.objects.filter(**kwargs) if kwargs else User.objects.all()
@@ -116,8 +126,14 @@ class UserList(APIView):
             return JsonResponse({'status': 204}, status=204)
 
 
-class UserDetail(APIView):
+class UserDetail(View):
     def get(self, request, pk=None, username=None):
+        """
+        :param request:
+        :param pk:
+        :param username:
+        :return:
+        """
         if request.method == 'GET':
             user = None
             if pk:
@@ -134,6 +150,12 @@ class UserDetail(APIView):
                 return JsonResponse({'status': 404, 'detail': 'This user does not exist.'}, status=404)
 
     def put(self, request, pk=None, username=None):
+        """
+        :param request:
+        :param pk:
+        :param username:
+        :return:
+        """
         if request.method == 'PUT':
             user = None
             if pk:
@@ -141,12 +163,18 @@ class UserDetail(APIView):
             elif username:
                 user = get_user(username=username)
             if user:
-                form = UserForm(request.data, instance=user)
+                form = UserForm(request.PUT, instance=user)
                 return update_user(form=form)
             else:
                 return JsonResponse({'status': 404, 'detail': 'This user does not exist.'}, status=404)
 
     def delete(self, request, pk=None, username=None):
+        """
+        :param request:
+        :param pk:
+        :param username:
+        :return:
+        """
         if request.method == 'DELETE':
             user = None
             if pk:
@@ -160,52 +188,61 @@ class UserDetail(APIView):
                 return JsonResponse({'status': 404, 'detail': 'This user does not exist.'}, status=404)
 
 
-class Authentication(APIView):
+class Authentication(View):
     def post(self, request):
-        if request.method == 'POST':
-            form = UserLoginForm(request.POST)  # validate user input when creating authentication
-            if form.is_valid():
-                # print(form.cleaned_data)
-                user = get_user(username=form.cleaned_data['username'])
-                if not user:
-                    return JsonResponse({'status': 404, 'detail': 'This username does not exist.'}, status=404)
-                response = {}
-                token = get_auth(username=form.cleaned_data['username'])
-                print(hashers.check_password(form.cleaned_data['password'], user.password))
-                if token:
-                    response['auth'] = token.authenticator
-                    response['status'] = 409
-                    response['detail'] = 'This authenticator already exists.'
-                    return JsonResponse(response, status=409)
-                elif hashers.check_password(form.cleaned_data['password'], user.password):
-                    auth = hmac.new(
-                        key=settings.SECRET_KEY.encode('utf-8'),
-                        msg=os.urandom(32),
-                        digestmod='sha256',
-                    ).hexdigest()
-                    token = AuthenticatorForm({'username': form.cleaned_data['username'],
-                                               'authenticator': auth,
-                                               'date_created': datetime.now()})
-                    token.save()
-                    response['auth'] = auth
-                    response['status'] = 201
-                    response['detail'] = 'Authenticator was successfully created for {}.'.format(
-                        form.cleaned_data['username'])
-                    return JsonResponse(response, status=201)
-                else:
-                    response['status'] = 400
-                    response['detail'] = 'Authenticator was not created.'
-                    return JsonResponse(response, status=400)
+        """
+        POST /v1/auth/
+        :param request: username, password
+        :return:
+        """
+        form = UserLoginForm(request.POST)  # validate user input when creating authentication
+        if form.is_valid():
+            user = get_user(username=form.cleaned_data['username'])
+            if not user:
+                return failure_response(status_code=400, detail='User {} does not exist.'.format(
+                    form.cleaned_data['username']))
+            token = get_authenticator(username=form.cleaned_data['username'])
+            print(type(user.password))
+            print(type(form.cleaned_data['password']))
+            print(hashers.check_password(form.cleaned_data['password'], user.password))
+            if token:
+                return failure_response(status_code=409, detail='User {} is already authenticated.'.format(
+                    form.cleaned_data['username']), auth_token=token.authenticator)
+            elif hashers.check_password(form.cleaned_data['password'], user.password):
+                auth_token = hmac.new(
+                    key=settings.SECRET_KEY.encode('utf-8'),
+                    msg=os.urandom(32),
+                    digestmod='sha256',
+                ).hexdigest()
+                auth = AuthenticatorForm({'username': form.cleaned_data['username'],
+                                          'authenticator': auth_token,
+                                          'date_created': datetime.now()})
+                auth.save()
+                return success_response(status_code=201, detail='Authenticator is successfully created for user {}.'.format(
+                    form.cleaned_data['username']), auth_token=auth_token)
+            else:
+                return failure_response(status_code=400, detail='Authenticator is not created for user {}.'.format(
+                    form.cleaned_data['username']))
+        else:
+            return failure_response(status_code=400, detail=str(dict(form.errors.items())))
 
 
-class AuthenticationCheck(APIView):
+class AuthenticationCheck(View):
     def get(self, request, username=None, authenticator=None):
+        """
+        GET /v1/auth/{username}/
+        GET /v1/auth/{authenticator}/
+        :param request:
+        :param username:
+        :param authenticator:
+        :return:
+        """
         if request.method == 'GET':
             token = None
             if username:
-                token = get_auth(username=username)
+                token = get_authenticator(username=username)
             if authenticator:
-                token = get_auth(authenticator=authenticator)
+                token = get_authenticator(authenticator=authenticator)
             response = {}
             if token:
                 time_delta = (timezone.now() - token.date_created).days * 24 * 60
@@ -225,12 +262,18 @@ class AuthenticationCheck(APIView):
                                     status=404)
 
     def delete(self, request, username=None, authenticator=None):
+        """
+        :param request:
+        :param username:
+        :param authenticator:
+        :return:
+        """
         if request.method == 'DELETE':
             token = None
             if username:
-                token = get_auth(username=username)
+                token = get_authenticator(username=username)
             if authenticator:
-                token = get_auth(authenticator=authenticator)
+                token = get_authenticator(authenticator=authenticator)
             if token:
                 token.delete()
                 return JsonResponse({'status': 204}, status=204)
@@ -239,7 +282,7 @@ class AuthenticationCheck(APIView):
                                     status=404)
 
 
-class CarpoolList(APIView):
+class CarpoolList(View):
     def get(self, request, **kwargs):
         if request.method == 'GET':
             carpools = Carpool.objects.filter(**kwargs) if kwargs else Carpool.objects.all()
@@ -263,7 +306,7 @@ class CarpoolList(APIView):
             return JsonResponse({'status': 204}, status=204)
 
 
-class CarpoolDetail(APIView):
+class CarpoolDetail(View):
     def get(self, request, pk):
         if request.method == 'GET':
             carpool = get_carpool(pk=pk)
@@ -280,7 +323,7 @@ class CarpoolDetail(APIView):
         if request.method == 'PUT':
             carpool = get_carpool(pk=pk)
             if carpool:
-                form = CarpoolForm(request.data, instance=carpool)
+                form = CarpoolForm(request.PUT, instance=carpool)
                 return update_carpool(form=form)
             else:
                 return JsonResponse({'status': 404, 'detail': 'This carpool does not exist.'}, status=404)

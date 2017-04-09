@@ -1,12 +1,17 @@
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.db import models
+
+name_validator = RegexValidator(regex=r"^[a-z]([-']?[a-z]+)*( [a-z]([-']?[a-z]+)*)+$")  # full name requires space
+username_validator = RegexValidator(regex=r"^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$")  # 8-20 chars
+sha256_validator = RegexValidator(regex=r"[A-Fa-f0-9]{64}")  # sha256 hash is 64 bytes long
 
 
 class User(models.Model):
-    name = models.CharField(max_length=128)
-    username = models.CharField(max_length=128, default="username")
-    password = models.CharField(max_length=128, default="password")
-    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, validators=[MinValueValidator(0)])
+    name = models.CharField(validators=[name_validator])
+    username = models.CharField(default='username', validators=[username_validator])
+    password = models.CharField(default="5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8",
+                                validators=[sha256_validator])  # password uses PBKDF2 hashes to sha256
+    balance = models.DecimalField(default=0.00, max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     carpool_owned = models.ForeignKey(  # user is driver, user deletes himself, carpool is deleted
         'Carpool',
         on_delete=models.SET_NULL,
@@ -36,16 +41,20 @@ class Carpool(models.Model):
         related_name='carpool_joined_set',
         blank=True
     )  # list of multiple passengers per carpool (users)
-    cost = models.DecimalField(max_digits=10, decimal_places=2, default=1.50, validators=[MinValueValidator(0)])
-    location_start_lat = models.FloatField(default=38.037658, validators=[MinValueValidator(-90.0), MaxValueValidator(90.0)])
-    location_start_lon = models.FloatField(default=-78.485381, validators=[MinValueValidator(-180.0), MaxValueValidator(180.0)])
-    location_end_lat = models.FloatField(default=38.037658, validators=[MinValueValidator(-90.0), MaxValueValidator(90.0)])
-    location_end_lon = models.FloatField(default=-78.485381, validators=[MinValueValidator(-180.0), MaxValueValidator(180.0)])
+    cost = models.DecimalField(default=1.50, max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    location_start_lat = models.FloatField(default=38.037658,
+                                           validators=[MinValueValidator(-90.0), MaxValueValidator(90.0)])
+    location_start_lon = models.FloatField(default=-78.485381,
+                                           validators=[MinValueValidator(-180.0), MaxValueValidator(180.0)])
+    location_end_lat = models.FloatField(default=38.037658,
+                                         validators=[MinValueValidator(-90.0), MaxValueValidator(90.0)])
+    location_end_lon = models.FloatField(default=-78.485381,
+                                         validators=[MinValueValidator(-180.0), MaxValueValidator(180.0)])
     time_leaving = models.DateTimeField()
     time_arrival = models.DateTimeField()
 
 
 class Authenticator(models.Model):
-    username = models.CharField(max_length=128)
-    authenticator = models.CharField(max_length=255, primary_key=True)
+    username = models.CharField(default='username', validators=[username_validator])
+    authenticator = models.CharField(primary_key=True, validators=[sha256_validator])
     date_created = models.DateTimeField(auto_now_add=True)
