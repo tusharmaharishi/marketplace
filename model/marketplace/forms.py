@@ -19,10 +19,10 @@ class CarpoolForm(forms.ModelForm):
 class AuthenticatorForm(forms.ModelForm):
     class Meta:
         model = Authenticator
-        fields = ['username', 'authenticator']
+        fields = ['username', 'auth_token']
 
 
-class UserLoginForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ['username', 'password']
+# class UserLoginForm(forms.ModelForm):
+#     class Meta:
+#         model = User
+#         fields = ['username', 'password']

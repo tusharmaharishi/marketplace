@@ -57,10 +57,10 @@ class UserLogin(APIView):
 
 
 class UserLogout(APIView):
-    def delete(self, request, authenticator):
+    def delete(self, request, auth_token):
         if request.method == 'DELETE':
-            # authenticator = request.data['authenticator']
-            response = requests.delete(MODEL_API + 'auth/' + authenticator + '/')
+            # auth_token = request.data['auth_token']
+            response = requests.delete(MODEL_API + 'auth/' + auth_token + '/')
             return JsonResponse({'detail': 'Deleted logout'}, status=204)
 
 

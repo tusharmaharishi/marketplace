@@ -21,6 +21,11 @@ docker stop mysql mysql-cmdline &> /dev/null || {
     exit 1
 }
 
+yes | find . -path "../*/migrations/*.py" -not -name "__init__.py" -delete
+yes | find . -path "../*/migrations/*.pyc"  -delete
+
+echo "Successfully deleted old migrations"
+
 docker start mysql mysql-cmdline &> /dev/null || {
     echo "Failed to start mysql container(s)."
     exit 1
@@ -42,8 +47,3 @@ grant all on *.* to 'www'@'%'; \"; " &> /dev/null || {
 }
 
 echo "Successfully cleared mysql database"
-
-find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
-find . -path "*/migrations/*.pyc"  -delete
-
-echo "Successfully deleted old migrations"

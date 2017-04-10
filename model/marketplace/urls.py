@@ -4,8 +4,8 @@ from . import views
 urlpatterns = [
     url(r'^$', views.index),
     url(r'^v1/auth/$', views.Authentication.as_view(), name='auth'),
-    url(r'^v1/auth/(?P<authenticator>[A-Fa-f0-9]{64})/$', views.AuthenticationCheck.as_view(), name='auth_by_authenticator'),
-    url(r'^v1/auth/(?P<username>[a-z0-9.-]+)/$', views.AuthenticationCheck.as_view(), name='auth_by_username'),
+    url(r'^v1/auth/(?P<auth_token>[A-Fa-f0-9]{64})/$', views.Authentication.as_view(), name='auth_by_authenticator'),
+    url(r'^v1/auth/(?P<username>[a-z0-9.-]+)/$', views.Authentication.as_view(), name='auth_by_username'),
     url(r'^v1/users/$', views.UserList.as_view(), name='user_list'),
     url(r'^v1/users/(?P<pk>[0-9]+)/$', views.UserDetail.as_view(), name='user_detail_by_pk'),
     url(r'^v1/users/(?P<username>[a-z0-9.-]+)/$', views.UserDetail.as_view(), name='user_detail_py_username'),

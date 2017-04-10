@@ -55,9 +55,9 @@
     "model": "marketplace.user",
     "pk": 1,
     "fields": {
-      "name": "Kevin",
-      "username": "kevinc",
-      "password": "chau123",
+      "name": "Kevin Chau",
+      "username": "kevin",
+      "password": "85F5E10431F69BC2A14046A13AABAEFC660103B6DE7A84F75C4B96181D03F0B5",
       "balance": "25.00",
       "carpool_owned": 1,
       "carpool_joined": null
@@ -67,9 +67,9 @@
     "model": "marketplace.user",
     "pk": 2,
     "fields": {
-      "name": "Tushar",
-      "username": "tusharm",
-      "password": "maharishi123",
+      "name": "Tushar Maharishi",
+      "username": "tushar",
+      "password": "15ABE049407C6940B9A8953972CA1A8D35B8F2A7F75288B15D9CE5B12DEA9835",
       "balance": "20.00",
       "carpool_owned": null,
       "carpool_joined": 1
@@ -79,9 +79,9 @@
     "model": "marketplace.user",
     "pk": 3,
     "fields": {
-      "name": "Linda",
-      "username": "lindax",
-      "password": "xiong123",
+      "name": "Linda Xiong",
+      "username": "linda",
+      "password": "6BAB3007F56E2A9175FF1222C2654DDCD08FA7981A1DDC42F1D95CFBD80EDE47",
       "balance": "25.00",
       "carpool_owned": null,
       "carpool_joined": 1
@@ -91,9 +91,9 @@
     "model": "marketplace.user",
     "pk": 4,
     "fields": {
-      "name": "Bryan",
+      "name": "Bryan Chen",
       "username": "bycfly",
-      "password": "bycfly",
+      "password": "B158FD9E405428110E50EED87E1D34348B8E48FBB629758AE368C870BA69B651",
       "balance": "25.00",
       "carpool_owned": null,
       "carpool_joined": 2
@@ -103,9 +103,9 @@
     "model": "marketplace.user",
     "pk": 5,
     "fields": {
-      "name": "Pinckney",
+      "name": "Tom Pinckney",
       "username": "tp33",
-      "password": "tp33tp33",
+      "password": "0A11C3B761C1B85030C5B76E94A31E34B5F90B8948AE55A2E7BDB89D733BE589",
       "balance": "25.00",
       "carpool_owned": 2,
       "carpool_joined": null
@@ -115,9 +115,9 @@
     "model": "marketplace.user",
     "pk": 6,
     "fields": {
-      "name": "Christine",
-      "username": "ctsou",
-      "password": "ctsou123",
+      "name": "Christine Tsou",
+      "username": "christine",
+      "password": "8835912E628D29B93F1349247D8596BF969ED416F12F47039EF691FAF4BEE143",
       "balance": "28.00",
       "carpool_owned": 3,
       "carpool_joined": null
@@ -127,9 +127,9 @@
     "model": "marketplace.user",
     "pk": 7,
     "fields": {
-      "name": "Yuanyang",
-      "username": "zyy",
-      "password": "zyy123",
+      "name": "Yuanyang Zheng",
+      "username": "yuanyang",
+      "password": "20962A23D2BFEF6BAFD9B7BD0E96E2CB1B25FBFA6086A946F3C557F26B33BE9E",
       "balance": "28.00",
       "carpool_owned": null,
       "carpool_joined": 3

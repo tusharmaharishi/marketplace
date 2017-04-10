@@ -1,16 +1,17 @@
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.db import models
 
-name_validator = RegexValidator(regex=r"^[a-z]([-']?[a-z]+)*( [a-z]([-']?[a-z]+)*)+$")  # full name requires space
-username_validator = RegexValidator(regex=r"^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$")  # 8-20 chars
+name_validator = RegexValidator(regex=r"^[A-Za-z]([-']?[a-z]+)*( [A-Za-z]([-']?[a-z]+)*)+$")  # full name requires space
+username_validator = RegexValidator(regex=r"^(?=.{4,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$")  # 8-20 chars
+# pbkdf2_sha256_validator = RegexValidator(regex=r"^$pbkdf2-sha256")
 sha256_validator = RegexValidator(regex=r"[A-Fa-f0-9]{64}")  # sha256 hash is 64 bytes long
 
 
 class User(models.Model):
-    name = models.CharField(validators=[name_validator])
-    username = models.CharField(default='username', validators=[username_validator])
-    password = models.CharField(default="5E884898DA28047151D0E56F8DC6292773603D0D6AABBDD62A11EF721D1542D8",
-                                validators=[sha256_validator])  # password uses PBKDF2 hashes to sha256
+    name = models.CharField(max_length=128, validators=[name_validator])
+    username = models.CharField(max_length=128, default='username', validators=[username_validator])
+    password = models.CharField(max_length=255,
+                                default="$pbkdf2-sha256$6400$.6UI/S.nXIk8jcbdHx3Fhg$98jZicV16ODfEsEZeYPGHU3kbrUrvUEXOPimVSQDD44")  # password uses PBKDF2 hashes to sha256
     balance = models.DecimalField(default=0.00, max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     carpool_owned = models.ForeignKey(  # user is driver, user deletes himself, carpool is deleted
         'Carpool',
@@ -55,6 +56,6 @@ class Carpool(models.Model):
 
 
 class Authenticator(models.Model):
-    username = models.CharField(default='username', validators=[username_validator])
-    authenticator = models.CharField(primary_key=True, validators=[sha256_validator])
+    username = models.CharField(max_length=128, default='username', validators=[username_validator])
+    auth_token = models.CharField(max_length=255, primary_key=True, validators=[sha256_validator])
     date_created = models.DateTimeField(auto_now_add=True)
