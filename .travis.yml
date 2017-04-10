@@ -27,11 +27,13 @@ before_script:
   - sudo sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
   - sudo apt-get update
   - sudo apt-get install google-chrome-stable
-  - sleep 90 # need to give time for containers and xvfb to start
+  - sleep 60 # need to give time for containers and xvfb to start
 
 script:
   - cd ~/cs4501/app/
   - docker-compose up # daemon process -d goes in background
+  - sleep 120
+  - docker-compose down
 #  - >
 #    docker exec -it model bash -c
 #    "pip install -r requirement.txt && python manage.py test"
@@ -46,8 +48,6 @@ script:
 #after_success:
 
 after_script:
-  - docker-compose stop
-  - docker stop mysql
   - docker rm `docker ps -a -q`
   - docker rmi `docker images -q`
   - rm -rf db

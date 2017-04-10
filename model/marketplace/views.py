@@ -53,10 +53,10 @@ def index(request):
         return success_response(status_code=200, detail='This is the model API entry point.')
 
 
-def get_authenticator(authenticator=None, username=None):
-    if authenticator:
+def get_authenticator(auth_token=None, username=None):
+    if auth_token:
         try:
-            return Authenticator.objects.get(authenticator=authenticator)
+            return Authenticator.objects.get(auth_token=auth_token)
         except Authenticator.DoesNotExist:
             return None
     if username:
@@ -117,7 +117,7 @@ def update_carpool(form):
         carpool = form.save()
         user = get_user(pk=carpool.driver.pk)
         if not user:
-            return failure_response(status_code=404, detail='This usuer does not exist.')
+            return failure_response(status_code=404, detail='This user does not exist.')
         user.carpool_owned = carpool
         if carpool.passengers:
             for user_pk in carpool.passengers.all():
@@ -227,28 +227,16 @@ class Authentication(View):
         :param auth_token:
         :return:
         """
-        authenticator = None
-        if username:
-            authenticator = get_authenticator(username=username)
-        if auth_token:
-            authenticator = get_authenticator(auth_token=auth_token)
-        response = {}
-        if authenticator:
-            time_delta = (timezone.now() - authenticator.date_created).days * 24 * 60
-            if time_delta <= 60:  # token cannot be longer than an hour
-                response['auth'] = authenticator.authenticator
-                response['status'] = 200
-                response['detail'] = 'Authenticator is valid.'
-                return JsonResponse(response, status=200)
+        if request.method == 'GET':
+            authenticator = None
+            if username:
+                authenticator = get_authenticator(username=username)
+            if auth_token:
+                authenticator = get_authenticator(auth_token=auth_token)
+            if authenticator:
+                return success_response(status_code=200, detail='This authenticator is valid.', auth_token=authenticator.auth_token)
             else:
-                authenticator.delete()
-                response['auth'] = None
-                response['status'] = 404
-                response['detail'] = 'Authenticator expired.'
-                return JsonResponse(response, status=404)
-        else:
-            return JsonResponse({'status': 404, 'detail': 'This authenticator does not exist.'},
-                                status=404)
+                return failure_response(status_code=404, detail='This authenticator does not exist.')
 
     def post(self, request):
         """
@@ -258,59 +246,59 @@ class Authentication(View):
         :param request: username, password
         :return:
         """
-        try:
-            assert 'username' in request.POST and 'password' in request.POST
-        except AssertionError:
-            return failure_response(status_code=400,
-                                    detail='Username or password is missing.')
-        user = get_user(username=request.POST['username'])
-        if not user:
-            return failure_response(status_code=400, detail='User {} does not exist.'.format(request.POST['username']))
-        authenticator = get_authenticator(username=request.POST['username'])
-        if authenticator:
-            return failure_response(status_code=409, detail='User {} is already authenticated.'.format(
-                request.POST['username']), auth_token=authenticator.authenticator)
-        elif hasher.verify(request.POST['password'], user.password):
-            auth_token = hmac.new(
-                key=settings.SECRET_KEY.encode('utf-8'),
-                msg=os.urandom(32),
-                digestmod='sha256',
-            ).hexdigest()
-            if Authenticator.objects.filter(auth_token=auth_token).exists():
-                return failure_response(status_code=409, detail='This auth_token already exists for another user.')
-            auth = AuthenticatorForm({'username': request.POST['username'],
-                                      'auth_token': auth_token,
-                                      'date_created': datetime.now()})
-            auth.save()
-            return success_response(status_code=201,
-                                    detail='Authenticator is successfully created for user {}.'.format(
-                                        request.POST['username']), auth_token=auth_token)
-        else:
-            return failure_response(status_code=400,
-                                    detail='Passwords for user {} do not match.'.format(request.POST['username']))
+        if request.method == 'POST':
+            try:
+                assert 'username' in request.POST and 'password' in request.POST
+            except AssertionError:
+                return failure_response(status_code=400,
+                                        detail='Username or password is missing.')
+            user = get_user(username=request.POST['username'])
+            if not user:
+                return failure_response(status_code=400, detail='This user does not exist.')
+            authenticator = get_authenticator(username=request.POST['username'])
+            if authenticator:
+                return failure_response(status_code=409, detail='User {} is already authenticated.'.format(
+                    request.POST['username']), auth_token=authenticator.auth_token)
+            elif hasher.verify(request.POST['password'], user.password):
+                auth_token = hmac.new(
+                    key=settings.SECRET_KEY.encode('utf-8'),
+                    msg=os.urandom(32),
+                    digestmod='sha256',
+                ).hexdigest()
+                if Authenticator.objects.filter(auth_token=auth_token).exists():
+                    return failure_response(status_code=409, detail='This auth_token already exists for another user.')
+                auth = AuthenticatorForm({'username': request.POST['username'],
+                                          'auth_token': auth_token,
+                                          'date_created': datetime.now()})
+                auth.save()
+                return success_response(status_code=201,
+                                        detail='Authenticator is successfully created for user {}.'.format(
+                                            request.POST['username']), auth_token=auth_token)
+            else:
+                return failure_response(status_code=400,
+                                        detail='Passwords for user {} do not match.'.format(request.POST['username']))
 
-    def delete(self, request, username=None, authenticator=None):
+    def delete(self, request, username=None, auth_token=None):
         """
         DELETE /v1/auth/{username}/
         DELETE /v1/auth/{auth_token}/
         Call only when user logs out
         :param request:
         :param username:
-        :param authenticator:
+        :param auth_token:
         :return:
         """
         if request.method == 'DELETE':
-            token = None
+            authenticator = None
             if username:
-                token = get_authenticator(username=username)
+                authenticator = get_authenticator(username=username)
             if authenticator:
-                token = get_authenticator(authenticator=authenticator)
-            if token:
-                token.delete()
-                return JsonResponse({'status': 204}, status=204)
+                authenticator = get_authenticator(auth_token=auth_token)
+            if authenticator:
+                authenticator.delete()
+                return success_response(status_code=204, detail='This authenticator is successfully deleted.')
             else:
-                return JsonResponse({'status': 404, 'detail': 'This authenticator does not exist.'},
-                                    status=404)
+                return failure_response(status_code=404, detail='This authenticator does not exist.')
 
 
 class CarpoolList(View):

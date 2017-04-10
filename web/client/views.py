@@ -99,7 +99,7 @@ def login_user(request):
             return render(request, 'login.html',
                           {'login_form': form, 'next': next_url, 'login_message': 'Login failed'})
         response_json = response.json()
-        authenticator = response_json['auth']
+        authenticator = response_json['auth_token']
         next_url = reverse('index')
         response = HttpResponseRedirect(next_url)
         response.set_cookie('auth', authenticator)
