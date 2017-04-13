@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from .forms import UserLoginForm, UserRegistrationForm, CarpoolListingForm
 
 MODEL_API = 'http://model-api:8000/v1/'  # in docker VM, but in root computer, it's localhost:8001/v1/
+producer = KafkaProducer(bootstrap_servers='kafka:9092')
 
 def index(request):
     if request.method == 'GET':
@@ -27,8 +28,7 @@ def search(request):
     if request.method == 'GET':
         keywords = request.GET['keywords']
         es = Elasticsearch([{'host': 'es', 'port': 9200}])
-        es.indices.refresh(index="carpool_index")
-        results = es.search(index='carpool_index', body={'query': {'query_string': {'query': keywords}}, 'size': 10})
+        results = es.search(index='listing_index', body={'query': {'query_string': {'query': keywords}}, 'size': 10})
         return JsonResponse(results)
 
 
@@ -90,7 +90,7 @@ class CarpoolDetail(APIView):
             return JsonResponse(response)
 
 
-class CarpoolsFilter(APIView):
+class CarpoolList(APIView):
     def get(self, request):
         if request.method == 'GET':
             data = {}
@@ -107,8 +107,7 @@ class CarpoolsFilter(APIView):
             if form.is_valid():
                 response = requests.post(MODEL_API + 'carpools/', data=form.cleaned_data)
                 response_json = response.json()
-                producer = KafkaProducer(bootstrap_servers='kafka:9092')
-                producer.send('new_carpools_topic', json.dumps(response_json).encode('utf-8'))
+                producer.send('new-listings-topic', json.dumps(response_json).encode('utf-8'))
                 return JsonResponse(response_json, status=response.status_code)
             else:
                 return JsonResponse({'detail': form.errors}, status=400)

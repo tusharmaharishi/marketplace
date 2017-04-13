@@ -130,7 +130,6 @@ def create_carpool(request):
     if form.is_valid():
         response = requests.post(BASE_API + 'carpools/', data=form.cleaned_data)
         response_json = response.json()
-        print(response_json)
         if response.status_code == 201:
             return render(request, 'carpool_response.html',
                           {'createCarpoolForm': form, 'next': next_url, 'detail': 'Carpool successfully created.'})
