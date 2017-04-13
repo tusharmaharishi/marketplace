@@ -139,12 +139,32 @@ def create_carpool(request):
 
 
 def search_carpools(request):
-    search_form = SearchForm(request.POST or None)
-    next_url = reverse('index') or request.GET.get('next')
-    if request.method == 'GET':
-        return render(request, 'search.html', {'search_form': search_form, 'next': next_url})
-    if search_form.is_valid():
-        response = requests.post(BASE_API + 'search/', params={'keywords': search_form.cleaned_data['search']})
-        response_json = response.json()
-        print(response_json)
-        return render(request, 'search_result.html', {'data': response_json})
+    if request.GET.get('search_box') is not None:
+        params = {'keywords': request.GET.get('search_box', None)}
+        results = []
+        response = requests.post(BASE_API + 'search', params=params)
+        print('NEW', response)
+        if response:
+            response_json = response.json()
+            for hit in response_json['hits']['hits']:
+                results.append(hit['_source'])
+            if results:
+                return render(request, 'search_result.html', {'results': results})
+            else:
+                return render(request, 'search_result.html')
+        else:
+            return render(request, 'search_result.html')
+    else:
+        return render(request, 'search.html')
+
+    # search_form = SearchForm(request.POST or None)
+    # next_url = reverse('index') or request.GET.get('next')
+    # if request.method == 'GET' or not search_form.is_valid():
+    #     return render(request, 'search.html', {'search_form': search_form, 'next': next_url})
+    # if search_form.is_valid():
+    #     results = []
+    #     response = requests.post(BASE_API + 'search', params={'keywords': search_form.cleaned_data['search']})
+    #     if response:
+    #         response_json = response.json()
+    #         for hit in response_json['hits']['hits']:
+    #             results.append(hit['_source'])

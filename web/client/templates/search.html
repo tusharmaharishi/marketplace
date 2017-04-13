@@ -19,16 +19,28 @@
         <div class="col-xs-8" id="left">
 
             <h2>Search</h2>
-
             <!-- Search -->
             {% block content %}
                 <div class="search-form">
-                    <form class="search-form">
-                    {%csrf_token%}
-                    {{ search_form }}
-                    <button type="submit" value="Submit">Search</button><br>
+                    <form action="/search" method="get" role="search">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Search" name="search_box">
+                            <div class="input-group-btn">
+                                <button class="btn btn-default" type="submit">Search</button>
+                                <br>
+                            </div>
+                        </div>
                     </form>
+                    <a href="/">Back to the Main Page</a>
                 </div><br>
+                {#                <div class="search-form">#}
+                {#                    <form class="search-form">#}
+                {#                    {%csrf_token%}#}
+                {#                    {{ search_form }}#}
+                {#                    <button type="submit" value="Submit">Search</button><br>#}
+                {#                    </form>#}
+                {#                <a href="/">Back to the Main Page</a>#}
+                {#                </div><br>#}
             {% endblock %}
 
 

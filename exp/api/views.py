@@ -25,10 +25,12 @@ def failure_response(response):
 
 
 def search(request):
-    if request.method == 'GET':
+    print('SEARCH')
+    if request.method == 'POST':
         keywords = request.GET['keywords']
         es = Elasticsearch([{'host': 'es', 'port': 9200}])
         results = es.search(index='listing_index', body={'query': {'query_string': {'query': keywords}}, 'size': 10})
+        print('RESULTS', results)
         return JsonResponse(results)
 
 
