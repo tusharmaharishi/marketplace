@@ -145,7 +145,7 @@ def search_carpools(request):
     if request.method == 'GET':
         return render(request, 'search.html', {'search_form': search_form, 'next': next_url})
     if search_form.is_valid():
-        response = requests.post(BASE_API + 'search/', data=json.dumps({'query': search_form.cleaned_data['search']}))
+        response = requests.post(BASE_API + 'search/', params={'keywords': search_form.cleaned_data['search']})
         response_json = response.json()
         print(response_json)
         return render(request, 'search_result.html', {'data': response_json})
