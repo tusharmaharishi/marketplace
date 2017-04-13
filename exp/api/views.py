@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from .forms import UserLoginForm, UserRegistrationForm, CarpoolListingForm
 
 MODEL_API = 'http://model-api:8000/v1/'  # in docker VM, but in root computer, it's localhost:8001/v1/
-producer = KafkaProducer(bootstrap_servers='kafka:9092')
+producer = KafkaProducer(bootstrap_servers='kafka:9092', retries=5)
 
 def index(request):
     if request.method == 'GET':

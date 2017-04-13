@@ -87,7 +87,7 @@ services:
       - es:es
     volumes:
       - ./exp:/app
-    command: bash -c "python ./api/batch.py"
+    command: bash -c "python ./api/indexer.py"
     networks:
       - main
 networks:

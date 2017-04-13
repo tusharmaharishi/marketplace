@@ -57,7 +57,7 @@
     "fields": {
       "name": "Kevin Chau",
       "username": "kevin",
-      "password": "85F5E10431F69BC2A14046A13AABAEFC660103B6DE7A84F75C4B96181D03F0B5",
+      "password": "$pbkdf2-sha256$29000$Oed8b.3dG8MYI2TM2XuPcQ$J2ybQgX3BhpO7UK9HSI3yro8/D.KqvAR1NnfUxs/CUk",
       "balance": "25.00",
       "carpool_owned": 1,
       "carpool_joined": null
@@ -69,7 +69,7 @@
     "fields": {
       "name": "Tushar Maharishi",
       "username": "tushar",
-      "password": "15ABE049407C6940B9A8953972CA1A8D35B8F2A7F75288B15D9CE5B12DEA9835",
+      "password": "$pbkdf2-sha256$29000$JCRkzJkzBqB0rtXaOwdg7A$pSooM5YkhpevN7DR/vNH24jF5PNjluewZEFoWKkh.0w",
       "balance": "20.00",
       "carpool_owned": null,
       "carpool_joined": 1
@@ -81,7 +81,7 @@
     "fields": {
       "name": "Linda Xiong",
       "username": "linda",
-      "password": "6BAB3007F56E2A9175FF1222C2654DDCD08FA7981A1DDC42F1D95CFBD80EDE47",
+      "password": "$pbkdf2-sha256$29000$FMKYk3JuLWXMGSPkHOM8Zw$x.I/FQE2kRXEEc0FtFWFpOYfsth5IFi7hIhY5WTnS/k",
       "balance": "25.00",
       "carpool_owned": null,
       "carpool_joined": 1
@@ -93,7 +93,7 @@
     "fields": {
       "name": "Bryan Chen",
       "username": "bycfly",
-      "password": "B158FD9E405428110E50EED87E1D34348B8E48FBB629758AE368C870BA69B651",
+      "password": "$pbkdf2-sha256$29000$rtU6h7CWkrJWqtX6/1/L.Q$YL9RWnhoaNxlFnRgMlBjSjM/ooj/gWQAW.Tw54XqyoU",
       "balance": "25.00",
       "carpool_owned": null,
       "carpool_joined": 2
@@ -105,7 +105,7 @@
     "fields": {
       "name": "Tom Pinckney",
       "username": "tp33",
-      "password": "0A11C3B761C1B85030C5B76E94A31E34B5F90B8948AE55A2E7BDB89D733BE589",
+      "password": "$pbkdf2-sha256$29000$VioFYEwJIeQ8J6QU4nzvHQ$UTslar7wo0BvxcDEMAPzsAecTloH4B8CsR0Kd4aR84U",
       "balance": "25.00",
       "carpool_owned": 2,
       "carpool_joined": null
@@ -117,7 +117,7 @@
     "fields": {
       "name": "Christine Tsou",
       "username": "christine",
-      "password": "8835912E628D29B93F1349247D8596BF969ED416F12F47039EF691FAF4BEE143",
+      "password": "$pbkdf2-sha256$29000$XkvJmVMqhbBWynmv1Xrv/Q$XDLv3h2Hjsf9iN4EQUo6gJYjIFLRwTtUJr2rMxcoTb0",
       "balance": "28.00",
       "carpool_owned": 3,
       "carpool_joined": null
@@ -129,7 +129,7 @@
     "fields": {
       "name": "Yuanyang Zheng",
       "username": "yuanyang",
-      "password": "20962A23D2BFEF6BAFD9B7BD0E96E2CB1B25FBFA6086A946F3C557F26B33BE9E",
+      "password": "$pbkdf2-sha256$29000$uZeylhKi9J5TCqG0NsZ4Dw$y4egV4QsOIIiKtozQatyTJEgYNX5hLXbk6JfvG9wW0U",
       "balance": "28.00",
       "carpool_owned": null,
       "carpool_joined": 3

@@ -3,18 +3,21 @@ import json
 import requests
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+from kafka import KafkaProducer
 
-from .forms import UserLoginForm, UserRegistrationForm, CreateCarpoolForm, SearchForm
+from .forms import UserLoginForm, UserRegistrationForm, CreateCarpoolForm
 
 BASE_API = 'http://exp-api:8000/v1/'  # in docker VM, but in root computer, it's localhost:8002/v1/
+producer = KafkaProducer(bootstrap_servers='kafka:9092', retries=5)
 
 
 def get_home_page(request):
     response = requests.get(BASE_API + 'carpools/').json()
     carpools = response['carpools']
     users = response['users']
+    for carpool in carpools:
+        producer.send('new-listings-topic', json.dumps(carpool).encode('utf-8'))
     return render(request, 'index.html', {'latest_rides': carpools, 'latest_drivers': users})
 
 
@@ -46,8 +49,6 @@ def get_carpool_detail(request, pk):
         return render(request, 'list_carpools.html', {'carpool_list': data})
     except:
         return render(request, 'list_carpools.html')
-
-
 
 
 # def login_required(f):
@@ -157,14 +158,14 @@ def search_carpools(request):
     else:
         return render(request, 'search.html')
 
-    # search_form = SearchForm(request.POST or None)
-    # next_url = reverse('index') or request.GET.get('next')
-    # if request.method == 'GET' or not search_form.is_valid():
-    #     return render(request, 'search.html', {'search_form': search_form, 'next': next_url})
-    # if search_form.is_valid():
-    #     results = []
-    #     response = requests.post(BASE_API + 'search', params={'keywords': search_form.cleaned_data['search']})
-    #     if response:
-    #         response_json = response.json()
-    #         for hit in response_json['hits']['hits']:
-    #             results.append(hit['_source'])
+        # search_form = SearchForm(request.POST or None)
+        # next_url = reverse('index') or request.GET.get('next')
+        # if request.method == 'GET' or not search_form.is_valid():
+        #     return render(request, 'search.html', {'search_form': search_form, 'next': next_url})
+        # if search_form.is_valid():
+        #     results = []
+        #     response = requests.post(BASE_API + 'search', params={'keywords': search_form.cleaned_data['search']})
+        #     if response:
+        #         response_json = response.json()
+        #         for hit in response_json['hits']['hits']:
+        #             results.append(hit['_source'])

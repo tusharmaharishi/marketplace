@@ -31,7 +31,7 @@ before_script:
 
 script:
   - cd ~/cs4501/app/
-  - docker-compose up # daemon process -d goes in background
+  - docker-compose up -d # daemon process -d goes in background
   - sleep 120
   - docker-compose down
 #  - >
