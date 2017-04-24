@@ -4,7 +4,6 @@ import requests
 from django.http import JsonResponse
 from elasticsearch import Elasticsearch
 from kafka import KafkaProducer
-from rest_framework.views import APIView
 
 from .forms import UserLoginForm, UserRegistrationForm, CarpoolListingForm
 
@@ -16,12 +15,21 @@ def index(request):
         return JsonResponse({'detail': 'This is the experience API entry point.'}, status=200)
 
 
-def success_response(response):
-    pass
+def success_response(status_code, detail='', auth_token=None, data=None):
+    assert isinstance(detail, str) and (auth_token is None or len(auth_token) == 64)
+    response = {'detail': str(detail), 'auth_token': auth_token}
+    if data:
+        if isinstance(data, dict) or isinstance(data, QueryDict):
+            response['data'] = json.dumps(data)
+        else:
+            response['data'] = data
+    return JsonResponse(response, status=status_code)
 
 
-def failure_response(response):
-    pass
+def failure_response(status_code, detail='', auth_token=None):
+    assert isinstance(detail, str) and (auth_token is None or len(auth_token) == 64)
+    response = {'detail': str(detail), 'auth_token': auth_token}
+    return JsonResponse(response, status=status_code)
 
 
 def search(request):

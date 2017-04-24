@@ -194,16 +194,14 @@ class UserView(View):
         :return:
         """
         if request.method == 'DELETE':
+            user = None
             if pk or username:
                 user = get_user(pk=pk) if pk else get_user(username=username)
-                if user:
-                    user.delete()
-                    return success_response(status_code=204, detail='This user has been deleted.')
-                else:
-                    return failure_response(status_code=404, detail='This user does not exist.')
+            if user:
+                user.delete()
+                return success_response(status_code=204, detail='This user has been deleted.')
             else:
-                User.objects.all().delete()
-                return success_response(status_code=204, detail='These users have been deleted.')
+                return failure_response(status_code=404, detail='This user does not exist.')
 
 
 class CarpoolView(View):
@@ -310,32 +308,32 @@ class CarpoolView(View):
             else:
                 return failure_response(status_code=404, detail='This carpool does not exist.', auth_token=auth_token)
 
-    def delete(self, request, pk=None):
+    def delete(self, request, pk):
+        """
+        DELETE /v1/carpools/{pk}
+        :param request:
+        :param pk:
+        :return:
+        """
         if request.method == 'DELETE':
             body = request.body.decode('utf-8')
             body = QueryDict(body)
             if 'auth_token' not in body:
                 return failure_response(status_code=401, detail='This user is not logged in to perform this request.')
             auth_token = body['auth_token']
-            if pk:
-                carpool = get_carpool(pk=pk)
-                if carpool:
-                    carpool.delete()
-                    return success_response(status_code=204, detail='This carpool has been deleted.',
-                                            auth_token=auth_token)
-                else:
-                    return failure_response(status_code=404, detail='This carpool does not exist.',
-                                            auth_token=auth_token)
+            carpool = get_carpool(pk=pk)
+            if carpool:
+                carpool.delete()
+                return success_response(status_code=204, detail='This carpool has been deleted.', auth_token=auth_token)
             else:
-                Carpool.objects.all().delete()
-                return success_response(status_code=204, detail='These carpools have been deleted.')
+                return failure_response(status_code=404, detail='This carpool does not exist.', auth_token=auth_token)
 
 
 class AuthenticationView(View):
     def get(self, request, username=None, auth_token=None):
         """
-        GET /v1/auth/{username}/
-        GET /v1/auth/{auth_token}/
+        GET /v1/auth/{username}
+        GET /v1/auth/{auth_token}
         Call every time user does something while logged in
         :param request:
         :param username:
@@ -356,7 +354,7 @@ class AuthenticationView(View):
 
     def post(self, request):
         """
-        POST /v1/auth/
+        POST /v1/auth
         Call only when user logs in
         Validate user login info in exp layer, not model layer
         :param request: username, password
@@ -396,8 +394,8 @@ class AuthenticationView(View):
 
     def delete(self, request, username=None, auth_token=None):
         """
-        DELETE /v1/auth/{username}/
-        DELETE /v1/auth/{auth_token}/
+        DELETE /v1/auth/{username}
+        DELETE /v1/auth/{auth_token}
         Call only when user logs out
         :param request:
         :param username:
