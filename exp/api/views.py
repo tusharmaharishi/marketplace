@@ -2,7 +2,7 @@ import json
 
 import requests
 from django.http import JsonResponse, QueryDict
-from elasticsearch import Elasticsearch
+import elasticsearch
 from kafka import KafkaProducer
 from requests.compat import urljoin
 
@@ -10,6 +10,7 @@ from .forms import UserLoginForm, UserRegistrationForm, CarpoolListingForm
 
 MODEL_API = 'http://model-api:8000/v1/'  # in docker VM, but in root computer, it's localhost:8001/v1/
 producer = KafkaProducer(bootstrap_servers='kafka:9092', retries=5)
+es = elasticsearch.Elasticsearch([{'host': 'es', 'port': 9200}])
 
 
 def index(request):
@@ -125,6 +126,10 @@ def create_carpool(request):
 
 
 def get_driver_by_carpool(request):
+    """
+    :param request:
+    :return: driver, access by driver['fields'] or driver['pk']
+    """
     if request.method == 'GET':
         if 'carpool_pk' in request.GET:
             params = {'auth_token': request.GET.get('auth_token')}
@@ -156,6 +161,10 @@ def get_driver_by_carpool(request):
 
 
 def get_passengers_by_carpool(request):
+    """
+    :param request:
+    :return: data which includes list of passengers and count, access by passenger['fields'] or passenger['pk']
+    """
     if request.method == 'GET':
         if 'carpool_pk' in request.GET:
             params = {'auth_token': request.GET.get('auth_token')}
@@ -168,12 +177,12 @@ def get_passengers_by_carpool(request):
                 carpool = carpool_res_json['data']['carpools'][0]  # only one carpool json object in data
                 params['carpool_joined'] = carpool['pk']
                 try:
-                    passengers_res = driver_res = requests.get(urljoin(MODEL_API, 'users'), params=params)
+                    passengers_res = requests.get(urljoin(MODEL_API, 'users'), params=params)
                 except requests.exceptions.RequestException as e:
                     return failure_response(status_code=400, detail=e.message)
                 passengers_res_json = passengers_res.json()
                 if passengers_res.status_code // 100 == 2:
-                    passengers = passengers_res_json['data']['users']
+                    passengers = passengers_res_json['data']
                     return success_response(status_code=passengers_res.status_code, data=passengers,
                                             auth_token=passengers_res_json['auth_token'])
                 else:
@@ -187,32 +196,42 @@ def get_passengers_by_carpool(request):
             return failure_response(status_code=400, detail='This request is missing required fields.')
 
 
-def get_carpools_by_driver(request):
+def get_carpools_by_params(request):
+    """
+    :param request: params include driver pk, passenger pk, or start/end locations
+    :return: data which includes list of carpools and count, access by carpool['fields'] or carpool['pk']
+    """
     if request.method == 'GET':
-        res = requests.get(MODEL_API + 'carpools/' + pk).json()
-        return JsonResponse(res)
+        if any(k in request.GET for k in ['driver', 'driver_username', 'passenger', 'passenger_username']) or all(
+                        k in request.GET for k in
+                        ['location_start_lat', 'location_start_lon', 'location_end_lat', 'location_end_lon']):
+            params = request.GET.copy()
+            params['auth_token'] = request.GET.get('auth_token')
+            try:
+                res = requests.get(urljoin(MODEL_API, 'carpools'), params=params)
+            except requests.exceptions.RequestException as e:
+                return failure_response(status_code=400, detail=e.message)
+            res_json = res.json()
+            if res.status_code // 100 == 2:
+                carpools = res_json['data']
+                return success_response(status_code=res.status_code, data=carpools, auth_token=res_json['auth_token'])
+            else:
+                return failure_response(status_code=res.status_code, detail=res_json['detail'],
+                                        auth_token=res_json['auth_token'])
+        else:
+            return failure_response(status_code=400, detail='This request is missing required fields.')
 
 
-def get_carpools_by_passenger(request):
-    pass
-
-
-def get_carpools_by_location(request):
-    if request.method == 'GET':
-        data = {}
-        carpools_res = requests.get(MODEL_API + 'carpools/').json()
-        users_res = requests.get(MODEL_API + 'users/').json()
-        if carpools_res and users_response:
-            data['carpools'] = carpools_response['data']
-            data['users'] = users_response['data']
-            return JsonResponse(data, safe=False)
-
-
-def search_carpools(request):
-    print('SEARCH')
+def search_carpools_by_query(request):
     if request.method == 'POST':
-        keywords = request.GET['keywords']
-        es = Elasticsearch([{'host': 'es', 'port': 9200}])
-        results = es.search(index='listing_index', body={'query': {'query_string': {'query': keywords}}, 'size': 10})
-        print('RESULTS', results)
-        return JsonResponse(results)
+        body = www_urlencoded_to_dict(request.body)
+        if 'auth_token' not in body:
+            return failure_response(status_code=401, detail='This user is not logged in to perform this request.')
+        keywords = body.get('keywords')
+        query = {'query': {'query_string': {'query': keywords}}, 'size': 10}
+        try:
+            res_json = es.search(index='listing_index', body=query)
+            return success_response(status_code=200, data=res_json['hits'], auth_token=body.get('auth_token'),
+                                    detail='This request got {} hits.'.format(res_json['hits']['total']))
+        except elasticsearch.ElasticsearchException as e:
+            return failure_response(status_code=400, detail=e.message)

@@ -13,12 +13,18 @@ producer = KafkaProducer(bootstrap_servers='kafka:9092', retries=5)
 
 
 def get_home_page(request):
-    response = requests.get(BASE_API + 'carpools/').json()
-    carpools = response['carpools']
-    users = response['users']
-    for carpool in carpools:
-        producer.send('new-listings-topic', json.dumps(carpool).encode('utf-8'))
-    return render(request, 'index.html', {'latest_rides': carpools, 'latest_drivers': users})
+    auth_token = request.COOKIES.get('auth_token')
+    if auth_token:
+        return render(request, 'index.html', context={'auth_token': auth_token})
+    # try:
+    #     response = requests.get(BASE_API + 'carpools/').json()
+    # except requests.exceptions.RequestException:
+    #     return render(request, 'index.html')
+    # carpools = response['carpools']
+    # users = response['users']
+    # for carpool in carpools:
+    #     producer.send('new-listings-topic', json.dumps(carpool).encode('utf-8'))
+    # return render(request, 'index.html', {'latest_rides': carpools, 'latest_drivers': users})
 
 
 def get_users(request):
@@ -55,7 +61,7 @@ def get_carpool_detail(request, pk):
 #     def wrap(request, *args, **kwargs):
 #         next_url = reverse('index')
 #         response = HttpResponseRedirect(next_url)
-#         auth = request.COOKIES.get('auth')
+#         auth = request.COOKIES.get('auth_token')
 #         if auth:
 #             response = requests.get(BASE_API + '/auth/' + str(auth)).json()
 #             if response['status'] == 200:
@@ -86,7 +92,7 @@ def register_user(request):
 
 
 def login_user(request):
-    # auth = request.COOKIES.get('auth')
+    # auth = request.COOKIES.get('auth_token')
     # if auth:
     #     return redirect('index')
     form = UserLoginForm(request.POST or None)
@@ -103,12 +109,12 @@ def login_user(request):
         authenticator = response_json['auth_token']
         next_url = reverse('index')
         response = HttpResponseRedirect(next_url)
-        response.set_cookie('auth', authenticator)
+        response.set_cookie('auth_token', authenticator)
         return response
 
 
 def logout_user(request):
-    auth = request.COOKIES.get('auth')
+    auth = request.COOKIES.get('auth_token')
     if auth:
         response = requests.delete(BASE_API + 'logout/' + auth + '/')
         if response.status_code == 204:
@@ -116,7 +122,7 @@ def logout_user(request):
         else:
             return render(request, 'logout.html', {'log_message': 'Logout failed'})
     response = HttpResponseRedirect(reverse('index'))
-    response.delete_cookie('auth')
+    response.delete_cookie('auth_token')
     return response
 
 
@@ -126,7 +132,7 @@ def create_carpool(request):
     :param request:
     :return:
     """
-    auth = request.COOKIES.get('auth')
+    auth = request.COOKIES.get('auth_token')
     if not auth:
         return HttpResponseRedirect(reverse('login') + '?next=' + reverse('create_carpool'))
     form = CreateCarpoolForm(request.POST or None)

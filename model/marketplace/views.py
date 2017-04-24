@@ -267,8 +267,8 @@ class CarpoolView(View):
                 elif request.GET.get('passenger_username'):
                     passenger = get_user(username=request.GET['passenger_username'])
                     carpools = Carpool.objects.filter(passengers__in=[passenger.pk])
-                elif (request.GET.get('location_start_lat') and request.GET.get('location_start_lon')) and (
-                            request.GET.get('location_end_lat') and request.GET.get('location_end_lon')):
+                elif all(k in request.GET for k in
+                         ('location_start_lat', 'location_start_lon', 'location_end_lat', 'location_end_lon')):
                     try:
                         location_start_lat = float(request.GET['location_start_lat'])
                         location_start_lon = float(request.GET['location_start_lon'])

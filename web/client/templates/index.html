@@ -15,47 +15,19 @@
 <div class="container-fluid" id="main">
     <div class="row">
         <div class="col-xs-8" id="left">
-            <h2>RideShare Homepage</h2>
+            <h2>RideShare</h2>
             <a href="login/">Login</a><br>
             <a href="registration/">Register an account</a><br>
             <a href="logout/">Logout</a><br>
-            <a href="search">Search</a><br><br>
-            <!-- item list -->
-{#            <h3>Currently in {{ user.name }}'s account</h3>#}
-            <div class="panel panel-default">
-                <div class="panel-heading"><a href="create_carpool/">Post a New Carpool</a></div>
-            </div>
-
+            <a href="search">Search</a><br>
             <hr>
-
-            <div class="panel panel-default">
-                <div class="panel-heading"><a href="carpools/">Latest Rides</a></div>
-            </div>
-            {% for ride in latest_rides %}
-                <p>Driver ID: {{ ride.fields.driver }}, from {{ ride.fields.location_start_lat }}
-                    to {{ ride.fields.location_end_lat }} </p>
-            {% endfor %}
-            <hr>
-
-            <div class="panel panel-default">
-                <div class="panel-heading"><a href="users/">Most Popular Drivers</a></div>
-            </div>
-            {% for ride in latest_rides %}
-                <p>Driver ID: {{ ride.fields.driver }}</p>
-            {% endfor %}
-            <hr>
-            <!-- /item list -->
+            <br>
         </div>
-        <div class="col-xs-4"><!--map-canvas will be postioned here--></div>
-        <img src="https://parking.uncg.edu/wp-content/uploads/2013/09/carpool3.jpg">
     </div>
 </div>
-<!-- end template -->
-
-<!-- script references -->
-<!-- <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
-		<script src="{% static 'js/bootstrap.min.js' %}"></script>
-		<script src="http://maps.googleapis.com/maps/api/js?sensor=false&extension=.js&output=embed"></script>
-		<script src="{% static 'js/scripts.js' %}"></script> -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+{#<script src="http://maps.googleapis.com/maps/api/js?sensor=false&extension=.js&output=embed"></script>#}
+<script src="{% static 'js/scripts.js' %}"></script>
 </body>
 </html>
