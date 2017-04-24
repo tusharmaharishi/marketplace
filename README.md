@@ -3,9 +3,8 @@
 [![Build Status](https://travis-ci.org/bryanchen18/marketplace.png?branch=master)](https://travis-ci.org/bryanchen18/marketplace)
 
 ### Setup
-1. Make sure mysql is running, then `docker start mysql`
-2. From the project root directory, `docker-compose up`
-4. `http://localhost:8000`
+From the project root directory, `docker-compose up` (starts the mysql container). Port is 8000.
+The entities and API are documented on [Swagger](https://app.swaggerhub.com/apis/bryanchen18/rideshare-api/1.0.0).
 
 ### User Stories
 - Story 1: As a user I want to be able to select a group to find a ride.

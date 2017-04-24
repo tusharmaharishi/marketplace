@@ -9,7 +9,7 @@ SECRET_KEY = 'hx7qfe9)zb8r5pa6$og2nag!up@^fv%7txz-rcs7ukyty$(fkm'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-APPEND_SLASH = True
+APPEND_SLASH = False
 
 ALLOWED_HOSTS = []
 
@@ -21,7 +21,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
     'marketplace',
     'elasticsearch',
     'coverage',
