@@ -121,6 +121,11 @@ def logout_user(request):
 
 
 def create_carpool(request):
+    """
+    Post auth_token along with form.data
+    :param request:
+    :return:
+    """
     auth = request.COOKIES.get('auth')
     if not auth:
         return HttpResponseRedirect(reverse('login') + '?next=' + reverse('create_carpool'))

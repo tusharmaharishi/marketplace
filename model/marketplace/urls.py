@@ -24,5 +24,5 @@ authentication_urls = [
 ]
 
 urlpatterns = [
-    url(r'^$', views.index),
+    url(r'^$', require_http_methods(['GET'])(views.index)),
 ] + user_urls + carpool_urls + authentication_urls
