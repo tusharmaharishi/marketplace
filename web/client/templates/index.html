@@ -16,12 +16,15 @@
     <div class="row">
         <div class="col-xs-8" id="left">
             <h2>RideShare</h2>
-            <a href="login/">Login</a><br>
-            <a href="registration/">Register an account</a><br>
-            <a href="logout/">Logout</a><br>
-            <a href="search">Search</a><br>
+            {% if auth_token %}
+                <a href="search">Search</a><br>
+                <a href="create_carpool">Create Carpool</a><br>
+                <a href="logout">Logout</a><br>
+            {% else %}
+                <a href="login">Login</a><br>
+                <a href="registration">Register</a><br>
+            {% endif %}
             <hr>
-            <br>
         </div>
     </div>
 </div>

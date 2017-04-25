@@ -153,7 +153,6 @@ class UserView(View):
                     return failure_response(status_code=404, detail='This user does not exist.')
             else:
                 users = None
-                print(bool(not request.GET))
                 if request.GET.get('carpool_owned'):
                     users = User.objects.filter(carpool_owned=request.GET['carpool_owned'])
                 elif request.GET.get('carpool_joined'):
@@ -426,7 +425,7 @@ class AuthenticationView(View):
             authenticator = None
             if username:
                 authenticator = get_authenticator(username=username)
-            elif authenticator:
+            elif auth_token:
                 authenticator = get_authenticator(auth_token=auth_token)
             if authenticator:
                 authenticator.delete()

@@ -1,10 +1,9 @@
-import json
-
 import requests
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import redirect, render_to_response
 from kafka import KafkaProducer
+from requests.compat import urljoin
 
 from .forms import UserLoginForm, UserRegistrationForm, CreateCarpoolForm
 
@@ -14,8 +13,11 @@ producer = KafkaProducer(bootstrap_servers='kafka:9092', retries=5)
 
 def get_home_page(request):
     auth_token = request.COOKIES.get('auth_token')
+    print('home page', auth_token)
     if auth_token:
-        return render(request, 'index.html', context={'auth_token': auth_token})
+        return render(request, 'index.html', {'auth_token': auth_token})
+    else:
+        return render(request, 'index.html')
     # try:
     #     response = requests.get(BASE_API + 'carpools/').json()
     # except requests.exceptions.RequestException:
@@ -57,73 +59,68 @@ def get_carpool_detail(request, pk):
         return render(request, 'list_carpools.html')
 
 
-# def login_required(f):
-#     def wrap(request, *args, **kwargs):
-#         next_url = reverse('index')
-#         response = HttpResponseRedirect(next_url)
-#         auth = request.COOKIES.get('auth_token')
-#         if auth:
-#             response = requests.get(BASE_API + '/auth/' + str(auth)).json()
-#             if response['status'] == 200:
-#                 return f(request, *args, **kwargs)
-#         return response
-#
-#     return wrap
-
-
 def register_user(request):
+    auth = request.COOKIES.get('auth_token')
+    if auth:
+        return redirect('index')
     form = UserRegistrationForm(request.POST or None)
     if request.method == 'GET' or not form.is_valid():
         return render(request, 'registration.html', {'registration_form': form})
     if form.is_valid():
-        print(form.cleaned_data)
-        data = {}
-        data['name'] = form.cleaned_data['name']
-        data['username'] = form.cleaned_data['username']
-        data['password'] = form.cleaned_data['password2']
-        data['balance'] = 0.00
-        response = requests.post(BASE_API + 'registration/', data=data)
-        if response.status_code != 201:
-            return render(request, 'registration_rejected.html')
-        else:
+        data = {'username': form.cleaned_data['username'], 'password': form.cleaned_data['password2'],
+                'name': form.cleaned_data['name'], 'balance': 0.00}
+        try:
+            res = requests.post(urljoin(BASE_API, 'auth/registration/'), data=data)
+        except requests.exceptions.RequestException:
+            return redirect('index')
+        if res.status_code // 100 == 2:
             return render(request, 'registration_success.html')
+        else:
+            return render(request, 'registration_rejected.html')
     else:
         return render(request, 'registration.html', {'registration_form': form})
 
 
 def login_user(request):
-    # auth = request.COOKIES.get('auth_token')
-    # if auth:
-    #     return redirect('index')
+    auth_token = request.COOKIES.get('auth_token')
+    if auth_token:
+        return redirect('index')
     form = UserLoginForm(request.POST or None)
     next_url = request.GET.get('next') or reverse('index')
     if request.method == 'GET' or not form.is_valid():
         return render(request, 'login.html', {'login_form': form, 'next': next_url})
     if form.is_valid():
         print(form.cleaned_data)
-        response = requests.post(BASE_API + 'login/', data=form.cleaned_data)
-        if response.status_code != 201 and response.status_code != 409:
+        res = requests.post(BASE_API + 'auth/login/', data=form.cleaned_data)
+        if res.status_code != 201 and res.status_code != 409:
             return render(request, 'login.html',
                           {'login_form': form, 'next': next_url, 'login_message': 'Login failed'})
-        response_json = response.json()
-        authenticator = response_json['auth_token']
-        next_url = reverse('index')
-        response = HttpResponseRedirect(next_url)
-        response.set_cookie('auth_token', authenticator)
-        return response
+        res_json = res.json()
+        auth_token = res_json['auth_token']
+        http_res = HttpResponseRedirect(reverse('index'))
+        http_res.set_cookie('auth_token', auth_token)
+        return http_res
+    else:
+        return render(request, 'login.html',
+                      {'login_form': form, 'next': next_url, 'login_message': str(dict(form.errors.items()))})
 
 
 def logout_user(request):
-    auth = request.COOKIES.get('auth_token')
-    if auth:
-        response = requests.delete(BASE_API + 'logout/' + auth + '/')
-        if response.status_code == 204:
+    auth_token = request.COOKIES.get('auth_token')
+    print('client logout_user', auth_token)
+    if auth_token:
+        try:
+            res = requests.delete(urljoin(BASE_API, 'auth/logout/' + auth_token))
+        except requests.exceptions.RequestException:
+            return redirect('index')
+        if res.status_code // 100 == 2:
             return render(request, 'logout.html', {'log_message': 'Logout successful'})
         else:
             return render(request, 'logout.html', {'log_message': 'Logout failed'})
-    response = HttpResponseRedirect(reverse('index'))
-    response.delete_cookie('auth_token')
-    return response
+    http_res = HttpResponseRedirect(reverse('login'))
+    print('deleting cookie')
+    http_res.delete_cookie('auth_token')
+    return http_res
 
 
 def create_carpool(request):
@@ -132,33 +129,43 @@ def create_carpool(request):
     :param request:
     :return:
     """
-    auth = request.COOKIES.get('auth_token')
-    if not auth:
+    auth_token = request.COOKIES.get('auth_token')
+    print(auth_token)
+    if not auth_token:
         return HttpResponseRedirect(reverse('login') + '?next=' + reverse('create_carpool'))
     form = CreateCarpoolForm(request.POST or None)
     next_url = reverse('index')
     if request.method == 'GET' or not form.is_valid():
         return render(request, 'create_carpool.html', {'createCarpoolForm': form, 'next': next_url})
     if form.is_valid():
-        response = requests.post(BASE_API + 'carpools/', data=form.cleaned_data)
-        response_json = response.json()
-        if response.status_code == 201:
+        data = form.cleaned_data.copy()
+        data['auth_token'] = auth_token
+        try:
+            res = requests.post(urljoin(BASE_API, 'carpools/'), data=data)
+            print('in client', res.status_code)
+        except requests.exceptions.RequestException:
+            return render(request, 'create_carpool.html', {'createCarpoolForm': form, 'next': next_url})
+        res_json = res.json()
+        if res.status_code // 100 == 2:
             return render(request, 'carpool_response.html',
                           {'createCarpoolForm': form, 'next': next_url, 'detail': 'Carpool successfully created.'})
         else:
             return render(request, 'create_carpool.html',
-                          {'createCarpoolForm': form, 'next': next_url, 'error_message': response_json.get('detail')})
+                          {'createCarpoolForm': form, 'next': next_url, 'error_message': res_json.get('detail')})
+    else:
+        return render(request, 'create_carpool.html',
+                      {'createCarpoolForm': form, 'next': next_url, 'error_message': str(dict(form.errors.items()))})
 
 
 def search_carpools(request):
     if request.GET.get('search_box') is not None:
         params = {'keywords': request.GET.get('search_box', None)}
         results = []
-        response = requests.post(BASE_API + 'search', params=params)
+        response = requests.get(BASE_API + 'search', params=params)
         print('NEW', response)
         if response:
-            response_json = response.json()
-            for hit in response_json['hits']['hits']:
+            res_json = response.json()
+            for hit in res_json['hits']['hits']:
                 results.append(hit['_source'])
             if results:
                 return render(request, 'search_result.html', {'results': results})
@@ -177,6 +184,6 @@ def search_carpools(request):
         #     results = []
         #     response = requests.post(BASE_API + 'search', params={'keywords': search_form.cleaned_data['search']})
         #     if response:
-        #         response_json = response.json()
-        #         for hit in response_json['hits']['hits']:
+        #         res_json = response.json()
+        #         for hit in res_json['hits']['hits']:
         #             results.append(hit['_source'])

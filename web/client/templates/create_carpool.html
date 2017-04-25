@@ -22,14 +22,16 @@
 
             <!-- Login -->
             {% block content %}
-            <div class="createCarpool-form">
-                <form class="form-carpool" action="" method="post">
-                {%csrf_token %}
-                {{createCarpoolForm.as_ul}}
-                <button type="submit" value="Submit">Create</button><br>
-                </form>
-                {{ error_message }}
-            </div>
+                <div class="createCarpool-form">
+                    <form class="form-carpool" action="" method="post">
+                        {% csrf_token %}
+                        {{ createCarpoolForm.as_ul }}
+                        <button type="submit" value="Submit">Create</button>
+                        <br>
+                    </form>
+                    <a href="/">Back to the Main Page</a><br>
+                    {{ error_message }}
+                </div>
             {% endblock %}
 
 

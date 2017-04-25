@@ -1,11 +1,11 @@
 import json
 
+import elasticsearch
 import requests
 from django.http import JsonResponse, QueryDict
-import elasticsearch
 from kafka import KafkaProducer
 from requests.compat import urljoin
-
+from django.views.decorators.http import require_http_methods
 from .forms import UserLoginForm, UserRegistrationForm, CarpoolListingForm
 
 MODEL_API = 'http://model-api:8000/v1/'  # in docker VM, but in root computer, it's localhost:8001/v1/
@@ -21,7 +21,7 @@ def index(request):
 def success_response(status_code, detail='', auth_token=None, data=None):
     if auth_token and len(auth_token) != 64:
         return JsonResponse({'detail': 'This authenticator is not valid.'}, status=400)
-    res = {'detail': str(detail), 'auth_token': auth_token}
+    response = {'detail': str(detail), 'auth_token': auth_token}
     if data:
         if isinstance(data, dict) or isinstance(data, QueryDict) or isinstance(data, list):
             response['data'] = data
@@ -36,7 +36,7 @@ def success_response(status_code, detail='', auth_token=None, data=None):
 def failure_response(status_code, detail='', auth_token=None):
     if auth_token and len(auth_token) != 64:
         return JsonResponse({'detail': 'This authenticator is not valid.'}, status=400)
-    res = {'detail': str(detail), 'auth_token': auth_token}
+    response = {'detail': str(detail), 'auth_token': auth_token}
     return JsonResponse(response, status=status_code)
 
 
@@ -63,59 +63,6 @@ def create_user(request):
                 return failure_response(status_code=400, detail=e.message)
             res_json = res.json()
             if res.status_code // 100 == 2:
-                return success_response(status_code=res.status_code, detail=res_json['detail'], data=res_json['data'])
-            else:
-                return failure_response(status_code=res.status_code, detail=res_json['detail'])
-        else:
-            return failure_response(status_code=400, detail=str(dict(form.errors.items())))
-
-
-def create_authenticator(request):  # login
-    if request.method == 'POST':
-        body = www_urlencoded_to_dict(request.body)
-        form = UserLoginForm(body)
-        if form.is_valid():
-            try:
-                res = requests.post(urljoin(MODEL_API, 'auth/'), data=form.cleaned_data)
-            except requests.exceptions.RequestException as e:
-                return failure_response(status_code=400, detail=e.message)
-            res_json = res.json()
-            if res.status_code // 100 == 2:
-                return success_response(status_code=res.status_code, detail=res_json['detail'],
-                                        auth_token=res_json['auth_token'])
-            else:
-                return failure_response(status_code=res.status_code, detail=res_json['detail'])
-        else:
-            return failure_response(status_code=400, detail=str(dict(form.errors.items())))
-
-
-def delete_authenticator(request, username):  # logout
-    if request.method == 'DELETE':
-        try:
-            res = requests.delete(urljoin(MODEL_API, 'auth', username))
-        except requests.exceptions.RequestException as e:
-            return failure_response(status_code=400, detail=e.message)
-        res_json = res.json()
-        if res.status_code // 100 == 2:
-            return success_response(status_code=res.status_code)
-        else:
-            return failure_response(status_code=res.status_code, detail=res_json['detail'])
-
-
-def create_carpool(request):
-    if request.method == 'POST':
-        body = www_urlencoded_to_dict(request.body)
-        form = CarpoolListingForm(body)
-        if form.is_valid():
-            data = form.cleaned_data.copy()
-            data['auth_token'] = body.get('auth_token')  # return None if no auth_token
-            try:
-                res = requests.post(urljoin(MODEL_API, 'carpools/'), data=data)
-            except requests.exceptions.RequestException as e:
-                return failure_response(status_code=400, detail=e.message)
-            res_json = res.json()
-            if res.status_code // 100 == 2:
-                producer.send('new-listings-topic', json.dumps(res_json).encode('utf-8'))
                 return success_response(status_code=res.status_code, detail=res_json['detail'], data=res_json['data'],
                                         auth_token=res_json['auth_token'])
             else:
@@ -123,6 +70,47 @@ def create_carpool(request):
                                         auth_token=res_json['auth_token'])
         else:
             return failure_response(status_code=400, detail=str(dict(form.errors.items())))
+
+
+def create_authenticator(request):
+    """
+    POST /v1/auth/login
+    :param request:
+    :return:
+    """
+    if request.method == 'POST':
+        body = www_urlencoded_to_dict(request.body)
+        form = UserLoginForm(body)
+        if form.is_valid():
+            try:
+                res = requests.post(urljoin(MODEL_API, 'auth/'), data=form.cleaned_data)
+                print('exp create_authenticator', res.json())
+            except requests.exceptions.RequestException as e:
+                return failure_response(status_code=400, detail=e.message)
+            res_json = res.json()
+            if res.status_code // 100 == 2:
+                return success_response(status_code=res.status_code, detail=res_json['detail'],
+                                        auth_token=res_json['auth_token'])
+            else:
+                return failure_response(status_code=res.status_code, detail=res_json['detail'],
+                                        auth_token=res_json['auth_token'])
+        else:
+            return failure_response(status_code=400, detail=str(dict(form.errors.items())))
+
+
+def delete_authenticator(request, auth_token):  # logout
+    if request.method == 'DELETE':
+        try:
+            res = requests.delete(urljoin(MODEL_API, 'auth/' + auth_token))
+            print('in exp', res.status_code)
+        except requests.exceptions.RequestException as e:
+            return failure_response(status_code=400, detail=e.message)
+        if res.status_code // 100 == 2:  # 204 response returns no response, cannot parse json out of it
+            return success_response(status_code=res.status_code)
+        else:
+            res_json = res.json()
+            return failure_response(status_code=res.status_code, detail=res_json['detail'],
+                                    auth_token=res_json['auth_token'])
 
 
 def get_driver_by_carpool(request):
@@ -196,6 +184,29 @@ def get_passengers_by_carpool(request):
             return failure_response(status_code=400, detail='This request is missing required fields.')
 
 
+def create_carpool(request):
+    if request.method == 'POST':
+        body = www_urlencoded_to_dict(request.body)
+        form = CarpoolListingForm(body)
+        if form.is_valid():
+            data = form.cleaned_data.copy()
+            data['auth_token'] = body.get('auth_token')  # return None if no auth_token
+            try:
+                res = requests.post(urljoin(MODEL_API, 'carpools/'), data=data)
+            except requests.exceptions.RequestException as e:
+                return failure_response(status_code=400, detail=e.message)
+            res_json = res.json()
+            if res.status_code // 100 == 2:
+                producer.send('new-listings-topic', json.dumps(res_json).encode('utf-8'))
+                return success_response(status_code=res.status_code, detail=res_json['detail'], data=res_json['data'],
+                                        auth_token=res_json['auth_token'])
+            else:
+                return failure_response(status_code=res.status_code, detail=res_json['detail'],
+                                        auth_token=res_json['auth_token'])
+        else:
+            return failure_response(status_code=400, detail=str(dict(form.errors.items())))
+
+
 def get_carpools_by_params(request):
     """
     :param request: params include driver pk, passenger pk, or start/end locations
@@ -223,15 +234,19 @@ def get_carpools_by_params(request):
 
 
 def search_carpools_by_query(request):
-    if request.method == 'POST':
-        body = www_urlencoded_to_dict(request.body)
-        if 'auth_token' not in body:
-            return failure_response(status_code=401, detail='This user is not logged in to perform this request.')
-        keywords = body.get('keywords')
+    if request.method == 'GET':
+        keywords = request.GET.get('keywords')
         query = {'query': {'query_string': {'query': keywords}}, 'size': 10}
         try:
             res_json = es.search(index='listing_index', body=query)
-            return success_response(status_code=200, data=res_json['hits'], auth_token=body.get('auth_token'),
+            return success_response(status_code=200, data=res_json['hits'],
                                     detail='This request got {} hits.'.format(res_json['hits']['total']))
         except elasticsearch.ElasticsearchException as e:
             return failure_response(status_code=400, detail=e.message)
+
+
+def dispatch_carpools(request):
+    if request.method == 'GET':
+        return get_carpools_by_params(request)
+    elif request.method == 'POST':
+        return create_carpool(request)

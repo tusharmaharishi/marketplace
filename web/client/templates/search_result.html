@@ -18,7 +18,7 @@
     <div class="row">
         <div class="col-xs-8" id="left">
 
-            <h2>Search Results</h2>
+            <h2>RideShare</h2>
 
             <!-- Search -->
             {% block content %}
@@ -32,15 +32,8 @@
                             </div>
                         </div>
                     </form>
-                    {#                    <form class="search-form">#}
-                    {#                        {% csrf_token %}#}
-                    {#                        {{ search_form }}#}
-                    {#                        <button type="submit" value="Submit">Search</button>#}
-                    {#                        <br>#}
-                    {#                    </form>#}
                     <a href="/">Back to the Main Page</a>
-                </div><br>
-
+                </div><hr>
                 <div class="carpool-list">
                 {% if results %}
                     {% for res in results %}
@@ -66,7 +59,6 @@
                         </div>
                     {% endfor %}
                 {% else %}
-                    <br>
                     <b>No results found</b>
                 {% endif %}
             {% endblock %}
@@ -74,7 +66,6 @@
 
             </div>
             <div class="col-xs-4"><!--map-canvas will be postioned here--></div>
-            <img src="https://parking.uncg.edu/wp-content/uploads/2013/09/carpool3.jpg">
         </div>
     </div>
 </body>
