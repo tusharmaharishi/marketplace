@@ -1,21 +1,24 @@
-from django.test import TestCase
+import unittest
+from unittest import TestCase
 from pyvirtualdisplay import Display
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-
+import os
+cwd = os.getcwd()
+print(cwd)
 
 class AuthenticationTestCase(TestCase):
     def setUp(self):
-        self.display = Display(visible=0, size=(1024, 768))
-        self.driver = webdriver.Chrome('./chromedriver_linux64')
-        self.display.start()
+	display = Display(visible=0, size=(800, 800))  
+	display.start()
+        driver = webdriver.Chrome('/root/marketplace/web/client/chromedriver')
 
     def test_login(self):
         driver = self.driver
         driver.get("http://107.170.77.19:8000/login")
-
+	print('getting test log')
         username = driver.find_element_by_id("username")
         username.send_keys("abc")
 
@@ -27,7 +30,7 @@ class AuthenticationTestCase(TestCase):
     def test_logout(self):
         driver = self.driver
         driver.get("http://107.170.77.19:8000/login")
-
+	print('test logout')
         username = driver.find_element_by_id("username")
         username.send_keys("abc")
 
@@ -41,5 +44,8 @@ class AuthenticationTestCase(TestCase):
         driver.find_element_by_xpath("//a[@href='/logout']").click()
 
     def tearDown(self):
-        self.driver.close()
-        self.display.stop()
+      	driver.close()
+	display.stop()
+
+if __name__ == '__main__':
+	unittest.main()
