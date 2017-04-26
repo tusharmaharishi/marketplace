@@ -1,3 +1,8 @@
-from django.test import TestCase
+import json
 
-# Create your tests here.
+from django.test import TestCase, Client
+
+class AuthenticationTestCase(TestCase):
+    pass
+
+

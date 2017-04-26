@@ -1,7 +1,7 @@
 import requests
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect, render_to_response
+from django.shortcuts import redirect, render
 from kafka import KafkaProducer
 from requests.compat import urljoin
 
@@ -82,6 +82,7 @@ def register_user(request):
 
 
 def login_user(request):
+    http_res = None
     auth_token = request.COOKIES.get('auth_token')
     if auth_token:
         return redirect('index')
@@ -106,18 +107,19 @@ def login_user(request):
 
 
 def logout_user(request):
+    http_res = None
     auth_token = request.COOKIES.get('auth_token')
     print('client logout_user', auth_token)
     if auth_token:
         try:
             res = requests.delete(urljoin(BASE_API, 'auth/logout/' + auth_token))
+            if res.status_code // 100 == 2:
+                http_res = render(request, 'logout.html', {'log_message': 'Logout successful'})
+            else:
+                http_res = render(request, 'logout.html', {'log_message': 'Logout failed'})
         except requests.exceptions.RequestException:
             return redirect('index')
-        if res.status_code // 100 == 2:
-            return render(request, 'logout.html', {'log_message': 'Logout successful'})
-        else:
-            return render(request, 'logout.html', {'log_message': 'Logout failed'})
-    http_res = HttpResponseRedirect(reverse('login'))
+    # http_res = HttpResponseRedirect(reverse('login'))
     print('deleting cookie')
     http_res.delete_cookie('auth_token')
     return http_res
@@ -161,16 +163,17 @@ def search_carpools(request):
     if request.GET.get('search_box') is not None:
         params = {'keywords': request.GET.get('search_box', None)}
         results = []
-        response = requests.get(BASE_API + 'search', params=params)
-        print('NEW', response)
-        if response:
-            res_json = response.json()
-            for hit in res_json['hits']['hits']:
-                results.append(hit['_source'])
-            if results:
-                return render(request, 'search_result.html', {'results': results})
-            else:
-                return render(request, 'search_result.html')
+        try:
+            res = requests.get(BASE_API + 'search', params=params)
+        except requests.exceptions.RequestException:
+            return render(request, 'search.html')
+        res_json = res.json()
+        hits = res_json['data']['hits']
+        total = res_json['data']['total']
+        for hit in hits:
+            results.append(hit['_source'])
+        if results:
+            return render(request, 'search_result.html', {'results': results, 'total': total})
         else:
             return render(request, 'search_result.html')
     else:

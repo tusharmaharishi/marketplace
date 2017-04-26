@@ -30,7 +30,7 @@ services:
       - ./model:/app
     ports:
       - "8001:8000"
-    command: bash -c "sleep 30; pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py loaddata fixtures/db.json && mod_wsgi-express start-server --working-directory ./ --reload-on-changes ./model/wsgi.py --log-to-terminal && python manage.py test"
+    command: bash -c "sleep 30; pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py test && python manage.py loaddata fixtures/db.json && mod_wsgi-express start-server --working-directory ./ --reload-on-changes ./model/wsgi.py --log-to-terminal"
     networks:
       - main
   exp:
@@ -46,7 +46,7 @@ services:
       - ./exp:/app
     ports:
       - "8002:8000"
-    command: bash -c "pip install -r requirements.txt && mod_wsgi-express start-server --reload-on-changes ./exp/wsgi.py --log-to-terminal"
+    command: bash -c "pip install -r requirements.txt && python manage.py test && mod_wsgi-express start-server --reload-on-changes ./exp/wsgi.py --log-to-terminal"
     networks:
       - main
   web:

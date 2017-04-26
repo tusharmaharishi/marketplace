@@ -8,6 +8,7 @@ SECRET_KEY = 'hx7qfe9)zb8r5pa6$og2nag!up@^fv%7txz-rcs7ukyty$(fkm'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
 APPEND_SLASH = True
 
 ALLOWED_HOSTS = []
@@ -23,7 +24,7 @@ INSTALLED_APPS = (
     'marketplace',
     'elasticsearch',
     'coverage',
-    'django_nose',
+    # 'django_nose',
 )
 
 REST_FRAMEWORK = {
@@ -80,14 +81,14 @@ PASSWORD_HASHERS = [
 ]
 
 # Use nose to run all tests
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+# TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 # Tell nose to measure coverage on the 'foo' and 'bar' apps
-NOSE_ARGS = [
-    '--with-coverage',
-    '--cover-package=marketplace',
-    '--cover-html',
-]
+# NOSE_ARGS = [
+#     '--with-coverage',
+#     '--cover-package=marketplace',
+#     '--cover-html',
+# ]
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/

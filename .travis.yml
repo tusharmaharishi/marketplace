@@ -11,10 +11,6 @@ cache:
 services:
   - docker # default is docker 1.8.2 and docker-compose 1.4.2 (as of Oct. 2016)
 
-#install:
-#  - mkdir ~/cs4501/
-#  - mkdir ~/cs4501/db/
-#  -
 
 before_script:
   - mkdir ~/cs4501/

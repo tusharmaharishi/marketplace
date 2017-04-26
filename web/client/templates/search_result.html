@@ -33,9 +33,11 @@
                         </div>
                     </form>
                     <a href="/">Back to the Main Page</a>
-                </div><hr>
+                </div>
+                <hr>
                 <div class="carpool-list">
                 {% if results %}
+                    <b>Found {{ total }} results.</b>
                     {% for res in results %}
                         <div class="panel-group" id="accordion">
                             <div class="panel panel-default">
@@ -59,7 +61,7 @@
                         </div>
                     {% endfor %}
                 {% else %}
-                    <b>No results found</b>
+                    <b>No results found.</b>
                 {% endif %}
             {% endblock %}
 
