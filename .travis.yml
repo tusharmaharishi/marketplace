@@ -21,6 +21,7 @@ before_script:
   - "sh -e /etc/init.d/xvfb start" # X Virtual Framebuffer to imitate a display
   - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add - # install chrome for selenium
   - sudo sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+  - sleep 10
   - sudo apt-get update
   - sudo apt-get install google-chrome-stable
   - sleep 60 # need to give time for containers and xvfb to start
@@ -28,6 +29,8 @@ before_script:
 script:
   - cd ~/cs4501/app/
   - docker-compose up -d # daemon process -d goes in background
+  - cd ~/cs4501/app/web/client/
+  - python tests.py
   - sleep 120
   - docker-compose down
 #  - >
