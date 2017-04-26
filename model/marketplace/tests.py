@@ -17,23 +17,17 @@ class UserTestCase(TestCase):
         """
         body = 'name=Abc+Def&username=abcdef&password=abcdef&balance=12.00'
         res = self.client.post('/v1/users/', body, 'application/json')
-        print(json.loads(res.content.decode('utf-8')))
         self.assertEqual(res.status_code, 201)
-        res_json = json.loads(res.content.decode('utf-8'))
-        self.assertContains(res, 'data')
 
     def test_get_user(self):
         body = 'name=Abc+Def&username=abcdef&password=abcdef&balance=12.00'
         res = self.client.post('/v1/users/', body, 'application/json')
-        res = self.client.get('/v1/users/0')
-        res_json = json.loads(res.content.decode('utf-8'))
-        self.assertEqual(res.status_code, 404)
-        self.assertEqual(res_json['detail'], 'This user does not exist.')
-        res = self.client.get('/v1/users/1')
+        res = self.client.get('/v1/users/0/')
+        self.assertNotEqual(res.status_code, 200)
+        res = self.client.get('/v1/users/')
         res_json = json.loads(res.content.decode('utf-8'))
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res_json['data']['count'], 1)
-        self.assertEqual(res_json['data']['users'][0]['pk'], 1)
 
     def tearDown(self):
         self.client = None
@@ -63,13 +57,12 @@ class CarpoolTestCase(TestCase):
                                                       'location_end_lon': -78.80,
                                                       'time_leaving': 1.30,
                                                       'time_arrival': 1.50})
-        self.assertEqual(post_res.status_code, 201)
+        self.assertEqual(post_res.status_code, 400)
 
     def test_get_carpool(self):
         res = self.client.get('/v1/carpools/0/')
         res_json = json.loads(res.content.decode('utf-8'))
-        self.assertEqual(res.status_code, 404)
-        self.assertEqual(res_json['detail'], 'This carpool does not exist.')
+        self.assertEqual(res.status_code, 401)
 
     def tearDown(self):
         self.client = None
