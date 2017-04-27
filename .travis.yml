@@ -19,7 +19,6 @@ before_script:
   - mv -v ./{.[!.],}* ~/cs4501/app/  # moves everything in current root directory to cs4501/app for travis CI
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start" # X Virtual Framebuffer to imitate a display
-  - sudo apt-get install python-pip
   - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add - # install chrome for selenium
   - sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
   - sudo apt-get update
