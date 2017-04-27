@@ -11,33 +11,35 @@ cache:
 services:
   - docker # default is docker 1.8.2 and docker-compose 1.4.2 (as of Oct. 2016)
 
-
-before_script:
-  - mkdir ~/cs4501/
-  - mkdir ~/cs4501/db/
-  - mkdir ~/cs4501/app/
-  - mv -v ./{.[!.],}* ~/cs4501/app/  # moves everything in current root directory to cs4501/app for travis CI
+before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start" # X Virtual Framebuffer to imitate a display
+
+install:
   - wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add - # install chrome for selenium
   - sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
   - sudo apt-get update
   - sleep 20
   - sudo apt-get install google-chrome-stable
   - sudo sh -c 'echo "deb [arch=amd64] http" >> /opt/google/chrome/cron/google-chrome'
+  - pip install selenium==3.0.1
   - sleep 60 # need to give time for containers and xvfb to start
 
-script:
+before_script:
+  - mkdir ~/cs4501/
+  - mkdir ~/cs4501/db/
+  - mkdir ~/cs4501/app/
+  - mv -v ./{.[!.],}* ~/cs4501/app/  # moves everything in current root directory to cs4501/app for travis CI
   - cd ~/cs4501/app/
+
+script:
   - docker-compose up -d # daemon process -d goes in background
   - sleep 160
   - cd ~/cs4501/app/web/client/
-  - pip install selenium==3.0.1
   - python tests.py
   - sleep 30
   - docker-compose down
 
-after_script:
+after_success:
   - docker rm `docker ps -a -q`
   - docker rmi `docker images -q`
-  - rm -rf db
