@@ -36,18 +36,6 @@ script:
   - python tests.py
   - sleep 30
   - docker-compose down
-#  - >
-#    docker exec -it model bash -c
-#    "pip install -r requirement.txt && python manage.py test"
-#    # run Django unit tests on models
-#  - >
-#    docker exec -it exp bash -c
-#    "pip install -r requirement.txt && python manage.py test"
-#    # run Django unit tests on exp
-#  - >
-#    pip3 install -r requirement.txt && python3 ./misc/selenium/test_front_end_travis.py
-#    # run selenium front end tests with xvfb
-#after_success:
 
 after_script:
   - docker rm `docker ps -a -q`

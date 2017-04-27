@@ -60,7 +60,7 @@ services:
       - "8000:8000"
     volumes:
       - ./web:/app
-    command: bash -c "pip install -r requirements.txt && mod_wsgi-express start-server --reload-on-changes ./web/wsgi.py --log-to-terminal"
+    command: bash -c "sleep 90; pip install -r requirements.txt && mod_wsgi-express start-server --reload-on-changes ./web/wsgi.py --log-to-terminal"
     networks:
       - main
   kafka:
@@ -87,7 +87,7 @@ services:
       - es:es
     volumes:
       - ./exp:/app
-    command: bash -c "python ./api/indexer.py"
+    command: bash -c "sleep 30; python ./api/indexer.py"
     networks:
       - main
 networks:
