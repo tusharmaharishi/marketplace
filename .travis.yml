@@ -35,9 +35,9 @@ before_script:
 script:
   - docker-compose up -d # daemon process -d goes in background
   - sleep 160
-  - cd ~/cs4501/app/web/client/
-  - python tests.py
-  - sleep 30
+#  - cd ~/cs4501/app/web/client/
+#  - python tests.py
+#  - sleep 30
   - docker-compose down
 
 after_success:
