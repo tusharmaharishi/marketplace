@@ -46,7 +46,7 @@ services:
       - ./exp:/app
     ports:
       - "8002:8000"
-    command: bash -c "pip install -r requirements.txt && python manage.py test && mod_wsgi-express start-server --reload-on-changes ./exp/wsgi.py --log-to-terminal"
+    command: bash -c "sleep 90; pip install -r requirements.txt && python manage.py test && mod_wsgi-express start-server --reload-on-changes ./exp/wsgi.py --log-to-terminal"
     networks:
       - main
   web:

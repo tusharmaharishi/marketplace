@@ -30,7 +30,7 @@ before_script:
 script:
   - cd ~/cs4501/app/
   - docker-compose up -d # daemon process -d goes in background
-  - sleep 100
+  - sleep 160
   - cd ~/cs4501/app/web/client/
   - pip install selenium==3.0.1
   - python tests.py
