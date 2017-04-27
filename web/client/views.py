@@ -1,4 +1,5 @@
 import requests
+from requests.adapters import HTTPAdapter
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
