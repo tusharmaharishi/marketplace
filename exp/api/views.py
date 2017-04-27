@@ -239,7 +239,7 @@ def search_carpools_by_query(request):
         keywords = request.GET.get('keywords')
         query = {'query': {'query_string': {'query': keywords}}, 'size': 10}
         try:
-            res_json = es.search(index='carpool_index', body=query)
+            res_json = es.search(index='main_index', body=query)
             return success_response(status_code=200, data=res_json['hits'],
                                     detail='This request got {} hits.'.format(res_json['hits']['total']))
         except elasticsearch.ElasticsearchException as e:

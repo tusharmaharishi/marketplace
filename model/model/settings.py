@@ -72,6 +72,9 @@ DATABASES = {
         'USER': 'www',
         'PASSWORD': '$3cureUS',
         'HOST': 'db',
+        'TEST': {
+            'NAME': 'auto_test_cs4501',
+        }
     }
 }
 
