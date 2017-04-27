@@ -63,6 +63,7 @@ def create_user(request):
                 return failure_response(status_code=400, detail=e.message)
             res_json = res.json()
             if res.status_code // 100 == 2:
+                producer.send('new-listings-topic', json.dumps(res_json).encode('utf-8'))
                 return success_response(status_code=res.status_code, detail=res_json['detail'], data=res_json['data'],
                                         auth_token=res_json['auth_token'])
             else:
@@ -238,7 +239,7 @@ def search_carpools_by_query(request):
         keywords = request.GET.get('keywords')
         query = {'query': {'query_string': {'query': keywords}}, 'size': 10}
         try:
-            res_json = es.search(index='listing_index', body=query)
+            res_json = es.search(index='carpool_index', body=query)
             return success_response(status_code=200, data=res_json['hits'],
                                     detail='This request got {} hits.'.format(res_json['hits']['total']))
         except elasticsearch.ElasticsearchException as e:

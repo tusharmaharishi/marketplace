@@ -1,22 +1,17 @@
-import os
 import unittest
 from unittest import TestCase
 
-# from pyvirtualdisplay import Display
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-
-cwd = os.getcwd()
-print(cwd)
 
 
 class AuthenticationTestCase(TestCase):
     def setUp(self):
         # display = Display(visible=0, size=(800, 800))
         # display.start()
-        self.driver = webdriver.Chrome('./chromedriver')
+        self.driver = webdriver.Chrome('./chromedriver_2.19')
 
     def test_login(self):
         self.driver = self.driver
@@ -49,6 +44,21 @@ class AuthenticationTestCase(TestCase):
     def tearDown(self):
         self.driver.close()
         # display.stop()
+
+
+class SearchTestCase(TestCase):
+    def setUp(self):
+        # display = Display(visible=0, size=(800, 800))
+        # display.start()
+        self.driver = webdriver.Chrome('./chromedriver_2.19')
+
+    def test_search(self):
+        self.driver.get("http://107.170.77.19:8000/search")
+        query = self.driver.find_element_by_id("query")
+        query.send_keys("1")
+
+    def tearDown(self):
+        self.driver.close()
 
 
 if __name__ == '__main__':

@@ -1,0 +1,138 @@
+[
+  {
+    "model": "marketplace.carpool",
+    "pk": 1,
+    "fields": {
+      "driver": 1,
+      "cost": "10.20",
+      "location_start_lat": 38.037658,
+      "location_start_lon": -78.485381,
+      "location_end_lat": 38.853183,
+      "location_end_lon": -77.299025,
+      "time_leaving": "2017-04-25 11:30:00",
+      "time_arrival": "2017-04-25 13:50:00",
+      "passengers": [
+        2,
+        3
+      ]
+    }
+  },
+  {
+    "model": "marketplace.carpool",
+    "pk": 2,
+    "fields": {
+      "driver": 5,
+      "cost": "15.50",
+      "location_start_lat": 38.037658,
+      "location_start_lon": -78.485381,
+      "location_end_lat": 38.966577,
+      "location_end_lon": -77.096336,
+      "time_leaving": "2017-04-01 12:10:00",
+      "time_arrival": "2017-04-01 16:20:00",
+      "passengers": [
+        4
+      ]
+    }
+  },
+  {
+    "model": "marketplace.carpool",
+    "pk": 3,
+    "fields": {
+      "driver": 6,
+      "cost": "8.20",
+      "location_start_lat": 38.853183,
+      "location_start_lon": -77.299025,
+      "location_end_lat": 38.037658,
+      "location_end_lon": -78.485381,
+      "time_leaving": "2017-04-05 16:45:00",
+      "time_arrival": "2017-04-05 19:05:00",
+      "passengers": [
+        7
+      ]
+    }
+  },
+  {
+    "model": "marketplace.user",
+    "pk": 1,
+    "fields": {
+      "name": "Kevin Chau",
+      "username": "kevin",
+      "password": "$pbkdf2-sha256$29000$Oed8b.3dG8MYI2TM2XuPcQ$J2ybQgX3BhpO7UK9HSI3yro8/D.KqvAR1NnfUxs/CUk",
+      "balance": "25.00",
+      "carpool_owned": 1,
+      "carpool_joined": null
+    }
+  },
+  {
+    "model": "marketplace.user",
+    "pk": 2,
+    "fields": {
+      "name": "Tushar Maharishi",
+      "username": "tushar",
+      "password": "$pbkdf2-sha256$29000$JCRkzJkzBqB0rtXaOwdg7A$pSooM5YkhpevN7DR/vNH24jF5PNjluewZEFoWKkh.0w",
+      "balance": "20.00",
+      "carpool_owned": null,
+      "carpool_joined": 1
+    }
+  },
+  {
+    "model": "marketplace.user",
+    "pk": 3,
+    "fields": {
+      "name": "Linda Xiong",
+      "username": "linda",
+      "password": "$pbkdf2-sha256$29000$FMKYk3JuLWXMGSPkHOM8Zw$x.I/FQE2kRXEEc0FtFWFpOYfsth5IFi7hIhY5WTnS/k",
+      "balance": "25.00",
+      "carpool_owned": null,
+      "carpool_joined": 1
+    }
+  },
+  {
+    "model": "marketplace.user",
+    "pk": 4,
+    "fields": {
+      "name": "Bryan Chen",
+      "username": "bycfly",
+      "password": "$pbkdf2-sha256$29000$rtU6h7CWkrJWqtX6/1/L.Q$YL9RWnhoaNxlFnRgMlBjSjM/ooj/gWQAW.Tw54XqyoU",
+      "balance": "25.00",
+      "carpool_owned": null,
+      "carpool_joined": 2
+    }
+  },
+  {
+    "model": "marketplace.user",
+    "pk": 5,
+    "fields": {
+      "name": "Tom Pinckney",
+      "username": "tp33",
+      "password": "$pbkdf2-sha256$29000$VioFYEwJIeQ8J6QU4nzvHQ$UTslar7wo0BvxcDEMAPzsAecTloH4B8CsR0Kd4aR84U",
+      "balance": "25.00",
+      "carpool_owned": 2,
+      "carpool_joined": null
+    }
+  },
+  {
+    "model": "marketplace.user",
+    "pk": 6,
+    "fields": {
+      "name": "Christine Tsou",
+      "username": "christine",
+      "password": "$pbkdf2-sha256$29000$XkvJmVMqhbBWynmv1Xrv/Q$XDLv3h2Hjsf9iN4EQUo6gJYjIFLRwTtUJr2rMxcoTb0",
+      "balance": "28.00",
+      "carpool_owned": 3,
+      "carpool_joined": null
+    }
+  },
+  {
+    "model": "marketplace.user",
+    "pk": 7,
+    "fields": {
+      "name": "Yuanyang Zheng",
+      "username": "yuanyang",
+      "password": "$pbkdf2-sha256$29000$uZeylhKi9J5TCqG0NsZ4Dw$y4egV4QsOIIiKtozQatyTJEgYNX5hLXbk6JfvG9wW0U",
+      "balance": "28.00",
+      "carpool_owned": null,
+      "carpool_joined": 3
+    }
+  }
+]
