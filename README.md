@@ -21,3 +21,5 @@ The entities and API are documented on [Swagger](https://app.swaggerhub.com/apis
 - Story 12: As a producer/progammer I want to be able to put new listings into a Kafka queue.
 - Story 13: As a producer/programmer I want to see the listings in the Kafka queue be added to the elastic search.
 - Story 14: As a user I don't want to see register/log-in buttons after I've logged in.
+- Story 15: As a user I want to be able to see recommended carpools others have looked at after looking at the carpool I'm looking at.
+- Story 16: As a user I want to be able to see recommended carpools for my current search session.
