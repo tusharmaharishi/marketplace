@@ -1,4 +1,4 @@
-Django==1.10
+Django==2.2.24
 djangorestframework==3.5.3
 EasyProcess==0.2.3
 elasticsearch==2.4.1
