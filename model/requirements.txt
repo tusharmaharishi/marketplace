@@ -1,5 +1,5 @@
 coverage==4.3.4
-Django==1.10
+Django==2.2.24
 django-nose==1.4.4
 djangorestframework==3.5.3
 elasticsearch==2.4.1
